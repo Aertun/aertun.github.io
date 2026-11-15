@@ -220,6 +220,18 @@ aertun proof untrust verifier</code></pre>
 <p>A signature says which key signed a proof, never whose. A proof counts as this organisation's only when its key is one of the signers this store trusts, and the Proofs screen says so on every row: <em>trusted</em> and the signer's name, or <em>key not trusted here</em>. Trusting a key is a privileged change: one administrator asks, with a reason, and another approves on the People screen. An only administrator's own request waits an hour, can be declined from any administrator's session, and is then approved with a passkey sign-in made in the last five minutes. Agents may not trust a key.</p>
 <h2 id="format">What a proof is<a class="anchor" href="#format" aria-hidden="true" tabindex="-1">#</a></h2>
 <p>An <a href="https://in-toto.io/Statement/v1">in-toto Statement</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a>: the subject is the rule file by digest; the predicate (<code>https://aertun.github.io/proof/detection/v1</code>) names the claim in words, the verifier and its version, every material it read by digest, each check, and the verdict. It is signed twice, Ed25519 and ML-DSA-65, the second in the context <code>aertun/proof/v1</code>. The Ed25519 half is plain DSSE, so in-toto and Sigstore tooling check it with no help from Aertun. The signing key file must be readable by its owner alone.</p>
+<p>Each kind has its own predicate type, and its address documents it: what it claims, its verdict rule, and every field it carries.</p>
+<ul>
+<li><a href="/proof/detection/v1/"><code>proof/detection/v1</code></a> — a detection rule</li>
+<li><a href="/proof/triage/v1/"><code>proof/triage/v1</code></a> — an AI analyst</li>
+<li><a href="/proof/calibration/v1/"><code>proof/calibration/v1</code></a> — the analyst's threshold</li>
+<li><a href="/proof/verdicts/v1/"><code>proof/verdicts/v1</code></a> — another vendor's AI verdicts</li>
+<li><a href="/proof/adjudication/v1/"><code>proof/adjudication/v1</code></a> — closures judged again, blind</li>
+<li><a href="/proof/claim/v1/"><code>proof/claim/v1</code></a> — a pre-registered claim</li>
+<li><a href="/proof/reconciliation/v1/"><code>proof/reconciliation/v1</code></a> — an agent's own account</li>
+<li><a href="/proof/not-affected/v1/"><code>proof/not-affected/v1</code></a> — a VEX document</li>
+<li><a href="/proof/evidence/v1/"><code>proof/evidence/v1</code></a> — an AI's investigation</li>
+</ul>
   </div>
   <footer class="guide-foot">
     <p class="updated">Updated 2026-11-15 · <a href="https://github.com/aertun/aertun.github.io/blob/main/src/pages/proofs.html">Edit this page on GitHub</a></p>

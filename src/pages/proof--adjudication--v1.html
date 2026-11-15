@@ -1,0 +1,55 @@
+<!--
+title: Proof format: closures judged again, blind (v1)
+short: adjudication/v1
+seo: Aertun proof format: adjudication/v1
+description: The predicate https://aertun.github.io/proof/adjudication/v1: what a proof about closures judged again, blind claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/adjudication/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>On a random sample of every closure a product&#x27;s AI made in a period, committed to the audit log before any item was shown and judged without knowing who closed what, a share at most the tolerance were real; the people&#x27;s share is reported beside it.</p>
+<h2 id="verdict">Its verdict</h2>
+<p>Read as a verdicts proof is, on the AI’s share judged real; refused unless every item of the committed sample was judged, after the commitment, by a verified person.</p>
+<pre><code>aertun adjudicate prove SAMPLE --tolerance 0.01 --key signing.key --out adjudication.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>adjudication</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.adjudication</code></h2>
+<p>AdjudicationEvidence is the review, as counts.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>source</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>since</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>until</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>tolerance</code></td><td><code>float64</code></td><td></td></tr>
+<tr><td><code>sample</code></td><td><code>string</code></td><td>Sample names the draw; Committed the audit entry it was committed in, which every judgement follows; EarlierDraws how many samples of the same product were committed before it.</td></tr>
+<tr><td><code>committed</code></td><td><code>AuditEntry</code></td><td></td></tr>
+<tr><td><code>earlier_draws</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>population_ai</code></td><td><code>int</code></td><td>PopulationAI and PopulationHuman are the closures each stratum was drawn from; Unlinked the AI&#x27;s closures no single finding carries.</td></tr>
+<tr><td><code>population_human</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>unlinked</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>ai_false_closures</code></td><td><code>Bound</code> — k of n with exact one-sided bounds at 95% each: <code>{"k","n","lower","upper"}</code></td><td>AI and Human are each stratum&#x27;s items and how many were judged real.</td></tr>
+<tr><td><code>human_false_closures</code></td><td><code>Bound</code> — k of n with exact one-sided bounds at 95% each: <code>{"k","n","lower","upper"}</code></td><td></td></tr>
+<tr><td><code>reviewers</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>min_closures</code></td><td><code>int</code></td><td></td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

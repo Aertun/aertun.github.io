@@ -1,0 +1,57 @@
+<!--
+title: Proof format: the analyst's threshold (v1)
+short: calibration/v1
+seo: Aertun proof format: calibration/v1
+description: The predicate https://aertun.github.io/proof/calibration/v1: what a proof about the analyst's threshold claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/calibration/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>At or above the certified threshold, at most a stated share of the analyst&#x27;s closing suggestions are on findings a verified person ruled real, with stated confidence, for the model, adapter and prompt template named by digest.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>proven</strong> when a threshold is found whose exact Clopper–Pearson bound, corrected for every threshold examined, is at or under the stated rate; <strong>refuted</strong> when there were enough closing suggestions to show it and no threshold does; <strong>inconclusive</strong> when no threshold had enough for even a clean record to show it. A certificate expires.</p>
+<pre><code>aertun analyst calibrate --key signing.key --epsilon 0.05 --delta 0.05 --out calibration.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>calibration</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.calibration</code></h2>
+<p>CalibrationEvidence is everything a calibration certificate says, as exact counts and the bound computed from them.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>model</code></td><td><code>string</code></td><td>Model, Adapter and Template are what the certificate binds to: the model&#x27;s name, the sha256 of the adapter it runs with (empty for none) and the sha256 of the prompt template it is asked through.</td></tr>
+<tr><td><code>adapter_sha256</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>template_sha256</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>family</code></td><td><code>string</code></td><td>Family is the task the threshold gates — the decider&#x27;s name.</td></tr>
+<tr><td><code>channel</code></td><td><code>string</code></td><td>Channel is which score the threshold is compared with.</td></tr>
+<tr><td><code>epsilon</code></td><td><code>float64</code></td><td></td></tr>
+<tr><td><code>delta</code></td><td><code>float64</code></td><td></td></tr>
+<tr><td><code>method</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>candidates</code></td><td><code>int</code></td><td>Candidates is how many thresholds were examined: the m of δ/m.</td></tr>
+<tr><td><code>cases</code></td><td><code>int</code></td><td>Cases is how many labelled verdicts the fit read; Real how many of them a person ruled real.</td></tr>
+<tr><td><code>real</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>threshold</code></td><td><code>float64</code></td><td>Threshold is the candidate the counts below are at: the certified threshold when the verdict is proven, and otherwise the candidate whose bound came closest to ε.</td></tr>
+<tr><td><code>closures</code></td><td><code>int</code></td><td>Closures is how many closing suggestions scored at or above Threshold, and FalseClosures how many of those a person ruled real.</td></tr>
+<tr><td><code>false_closures</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>false_closure_upper</code></td><td><code>float64</code></td><td>Upper is the Clopper–Pearson upper bound on the false-closure rate behind FalseClosures of Closures, at confidence 1−Delta/Candidates.</td></tr>
+<tr><td><code>expires</code></td><td><code>string</code></td><td>Expires is when the certificate stops holding, RFC 3339.</td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

@@ -1,0 +1,58 @@
+<!--
+title: Proof format: another vendor's AI verdicts (v1)
+short: verdicts/v1
+seo: Aertun proof format: verdicts/v1
+description: The predicate https://aertun.github.io/proof/verdicts/v1: what a proof about another vendor's AI verdicts claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/verdicts/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>Of the alerts a product&#x27;s AI closed in a period, before anybody decided them, a share at most the declared tolerance were ones a verified person here later found real.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when the exact lower bound on that share is over the tolerance, naming the alerts; <strong>proven</strong> when the upper bound is at or under it on at least 30 closures; <strong>inconclusive</strong> between. Only verdicts given before the decision count.</p>
+<pre><code>aertun verdict prove --source NAME --since DATE --tolerance 0.01 --key signing.key --out verdicts.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>verdicts</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.verdicts</code></h2>
+<p>VerdictsEvidence is the score, with the counts behind every rate.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>source</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>labels</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>since</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>until</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>tolerance</code></td><td><code>float64</code></td><td></td></tr>
+<tr><td><code>considered</code></td><td><code>int</code></td><td>Considered are the product&#x27;s verdicts in the period; each is either Counted or in Excluded with its reason.</td></tr>
+<tr><td><code>counted</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>excluded</code></td><td><code>[]Exclusion</code></td><td></td></tr>
+<tr><td><code>alerts</code></td><td><code>int</code></td><td>Alerts are the alerts at least one counted verdict was about.</td></tr>
+<tr><td><code>min_closures</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>false_closures</code></td><td><code>Bound</code> — k of n with exact one-sided bounds at 95% each: <code>{"k","n","lower","upper"}</code></td><td>FalseClosures is closing answers on alerts a person found real, of the closing answers a person decided: the rate the verdict reads.</td></tr>
+<tr><td><code>review_coverage</code></td><td><code>Rate</code> — k of n with its 95% Wilson interval: <code>{"k","n","low","high"}</code></td><td>ReviewCoverage is the closures a person decided, of every alert the product closed in the period that this store could link.</td></tr>
+<tr><td><code>delivered_before_disposition</code></td><td><code>Rate</code> — k of n with its 95% Wilson interval: <code>{"k","n","low","high"}</code></td><td>DeliveredFirst is the counted verdicts delivered here before the disposition, of all counted.</td></tr>
+<tr><td><code>agreement</code></td><td><code>Rate</code> — k of n with its 95% Wilson interval: <code>{"k","n","low","high"}</code></td><td></td></tr>
+<tr><td><code>escalations_closed</code></td><td><code>Rate</code> — k of n with its 95% Wilson interval: <code>{"k","n","low","high"}</code></td><td></td></tr>
+<tr><td><code>abstentions</code></td><td><code>Rate</code> — k of n with its 95% Wilson interval: <code>{"k","n","low","high"}</code></td><td></td></tr>
+<tr><td><code>consistency</code></td><td><code>Rate</code> — k of n with its 95% Wilson interval: <code>{"k","n","low","high"}</code></td><td></td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

@@ -1,0 +1,55 @@
+<!--
+title: Proof format: an AI's investigation (v1)
+short: evidence/v1
+seo: Aertun proof format: evidence/v1
+description: The predicate https://aertun.github.io/proof/evidence/v1: what a proof about an AI's investigation claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/evidence/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>Every claim an investigation makes about a period — an event exists, an observable was seen or not seen, something happened so many times — holds against the events the store holds for that period.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when any claim is contradicted, each named; <strong>proven</strong> when every claim is supported and there are at least three; <strong>inconclusive</strong> otherwise. The proof says whether the store’s events span the period.</p>
+<pre><code>aertun proof evidence --report report.json --key signing.key --out report.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>citations</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.citations</code></h2>
+<p>CitationsEvidence is what an investigation&#x27;s citations came to.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>source</code></td><td><code>string</code></td><td>Source is the short name of whoever wrote the investigation; Form whether it was a report or plain text.</td></tr>
+<tr><td><code>form</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>since</code></td><td><code>string</code></td><td>Since and Until are the period the claims are about.</td></tr>
+<tr><td><code>until</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>held_from</code></td><td><code>string</code></td><td>HeldFrom and HeldUntil are the arrivals the store held when the proof was made, both empty when it held none; Covered is whether they span the period.</td></tr>
+<tr><td><code>held_until</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>covered</code></td><td><code>bool</code></td><td></td></tr>
+<tr><td><code>events_read</code></td><td><code>int</code></td><td>EventsRead is how many events in the period were read.</td></tr>
+<tr><td><code>claims</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>extracted</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>supported</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>contradicted</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>uncheckable</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>outcomes</code></td><td><code>[]CitationOutcome</code></td><td></td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

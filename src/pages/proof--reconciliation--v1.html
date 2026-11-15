@@ -1,0 +1,58 @@
+<!--
+title: Proof format: an agent's own account (v1)
+short: reconciliation/v1
+seo: Aertun proof format: reconciliation/v1
+description: The predicate https://aertun.github.io/proof/reconciliation/v1: what a proof about an agent's own account claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/reconciliation/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>Every call the agent interface answered for a registered agent, and every connection from a machine declared to run it alone, is in the agent&#x27;s own telemetry, and nothing that telemetry says it asked went unreceived.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when anything is unaccounted for either way, each named by time; <strong>proven</strong> when nothing is, over at least ten observations; <strong>inconclusive</strong> with fewer.</p>
+<pre><code>aertun agent reconcile NAME --since DATE --key signing.key --out agent.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>reconciliation</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.reconciliation</code></h2>
+<p>ReconciliationEvidence is what the agent reported and what was seen, as counts.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>agent</code></td><td><code>string</code></td><td>Agent is the registered agent; Telemetry the identity its spans name it by, as the operator declared.</td></tr>
+<tr><td><code>telemetry_agent</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>since</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>until</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>window_seconds</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>reported</code></td><td><code>int</code></td><td>Reported is the agent&#x27;s own tool-call spans in the period, and ForInterface those for a tool of the agent interface.</td></tr>
+<tr><td><code>for_interface</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>calls</code></td><td><code>int</code></td><td>Calls is the agent interface&#x27;s calls for it in the period; Matched those its spans account for, Unreported those they do not, and Unreceived its spans for the interface no call matches.</td></tr>
+<tr><td><code>matched</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>unreported</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>unreceived</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>hosts</code></td><td><code>[]string</code></td><td>Hosts are the machines declared to run it alone, and SharedHosts how many it shares; Connects the connections from its own, Unexplained those with no span of it near, SharedSkipped those from shared ones.</td></tr>
+<tr><td><code>shared_hosts</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>connects</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>unexplained</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>shared_skipped</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>min_observed</code></td><td><code>int</code></td><td></td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

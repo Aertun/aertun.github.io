@@ -1,0 +1,50 @@
+<!--
+title: Proof format: a VEX document (v1)
+short: not-affected/v1
+seo: Aertun proof format: not-affected/v1
+description: The in-toto predicate https://aertun.github.io/proof/not-affected/v1: what a proof about a VEX document claims, its fields, its verdict rule, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/not-affected/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>Every not_affected statement a party made about one asset holds against Aertun&#x27;s bill of materials, advisories and reachability analysis for that asset.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when any statement is contradicted, each named; <strong>proven</strong> when every statement is supported; <strong>inconclusive</strong> otherwise, with the reasons statements could not be checked counted.</p>
+<pre><code>aertun vuln prove-vex vendor.vex.json --source NAME --where ASSET --key signing.key --out vex.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>not_affected</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.not_affected</code></h2>
+<p>NotAffectedEvidence is what the statements came to, as counts.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>source</code></td><td><code>string</code></td><td>Source is the operator&#x27;s short name for whoever wrote the document; Asset the asset it is about, as its bill was imported under.</td></tr>
+<tr><td><code>asset</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>statements</code></td><td><code>int</code></td><td>Statements is every statement the document made, NotAffected those tested, and Checked the statement-and-package pairs they came to.</td></tr>
+<tr><td><code>not_affected</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>checked</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>supported</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>contradicted</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>uncheckable</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>reasons</code></td><td><code>[]ReasonCount</code></td><td></td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>
