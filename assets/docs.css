@@ -108,9 +108,13 @@ a:not([class]):focus-visible { border-radius: var(--shape-xs); }
 img { max-width: 100%; height: auto; }
 /* The tour: a still-image video with captions, and its transcript under it
    for anybody who would rather read, or cannot listen. */
-.tour { max-width: 64rem; margin: 0 0 3rem; }
-.tour video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: var(--shape-lg);
-  background: #0A1F44; border: 1px solid var(--outline-variant); }
+/* As wide as the text beside it, and never taller than most of the
+   screen: a 16:9 player the width of the hero filled a laptop's whole
+   viewport. */
+.tour { max-width: 46rem; margin: 0 0 3rem; }
+.tour video { display: block; width: 100%; max-width: min(100%, calc(70vh * 16 / 9)); height: auto;
+  aspect-ratio: 16 / 9; border-radius: var(--shape-lg); background: #0A1F44;
+  border: 1px solid var(--outline-variant); }
 .transcript { margin-top: 1rem; }
 .transcript > summary { cursor: pointer; font: var(--title-md); color: var(--primary); padding: .5rem 0; min-height: 24px; }
 .transcript > p { max-width: 46rem; }
