@@ -9,6 +9,7 @@ concepts
 
 ## Proving AI work
 proofs
+agents
 windtunnel
 
 ## Operations

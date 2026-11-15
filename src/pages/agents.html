@@ -1,0 +1,38 @@
+<!--
+title: AI agents: registered, bounded, stoppable
+short: AI agents
+seo: Aertun AI agents: a registry, run tokens and a kill switch
+description: Register AI agents before they act, bound each run with a token, let people consent to what an agent does for them, and stop any agent in one act.
+lead: Every agent is registered before it acts, bounded per run, and can be stopped in one act.
+icon: hub
+screens: Agents
+updated: 2026-11-15
+-->
+<p>An AI agent reaching Aertun is a principal of its own: it reads, it may propose, and it never approves, signs, keeps a proof or acts on another platform. What it may do is the narrowest of three things — its entry in the register, the grants of the person it acts for, and the limits of the credential it presents.</p>
+<h2 id="register">Register an agent</h2>
+<pre><code>aertun agent add watcher --owner dana@example.com --allow aertun_read --note "reads the queue overnight"
+aertun token issue agent:watcher --principal watcher --role viewer
+aertun agent list
+aertun agent allow watcher --add aertun_find</code></pre>
+<p>A token whose name is <code>agent:NAME</code> binds to that entry, and every gate refuses it unless the entry exists, is active, and allows the tool being called. An agent nobody registered is nobody. The tools are the three the agent interface serves: <code>aertun_find</code>, <code>aertun_read</code> and <code>aertun_write</code>, the last of which only proposes.</p>
+<img src="/images/registry.webp" alt="The agent registry: each registered agent with its status, owner, the tools it may call, and a reason box and button to stop it">
+<h2 id="runs">Bound one run</h2>
+<pre><code>aertun agent token watcher --tools aertun_read --for-run nightly-2026-11-15 \
+    [--hours 8] [--purpose observe|triage] [--calls 200] [--level 0]</code></pre>
+<p>A run token is a credential narrowed to one run: the tools it may call, within what the register allows; a life of one to 24 hours; a purpose; a call budget; an autonomy bound. Its caveats are signed with a key this store holds, so nobody holding the token can widen it. They are checked where its tools are called, and the bare credential half is refused everywhere on its own. Revoking it, disabling the agent and the kill switch all reach it.</p>
+<h2 id="where">Where it runs</h2>
+<pre><code>aertun agent maps watcher --host build01</code></pre>
+<p>A declaration, not a guess: once an operator says which agents run on a host, the recorder's events from that host carry their names, which is what lets a configuration change, or a connection, be joined to an agent. A host maps to at most four agents.</p>
+<h2 id="consent">An agent acting for a person</h2>
+<p>An agent that asks to act for somebody sends them to <code>/oauth/authorize</code>, beside the console. The person, signed in with two factors, sees which agent asks, who owns it, and what it would reach — <em>observe</em> (reads) or <em>triage</em> (reads and proposals) — for up to twelve hours, and allows or refuses. Nobody can consent to more than they hold.</p>
+<img src="/images/consent.webp" alt="The consent page: agent watcher, owned by its owner, asks to read the security queue for up to twelve hours, with Allow and Refuse">
+<pre><code>aertun agent consents
+aertun agent consents revoke ID</code></pre>
+<p>Revoking a consent ends every token minted under it, including any an agent exchanged from it on somebody's behalf. Exchanges are bounded three ways — the consent, the register and the credential presented — and the narrowest wins.</p>
+<h2 id="stop">Stop an agent</h2>
+<pre><code>aertun agent disable watcher --why "it began reading findings it was never asked about"
+aertun agent enable watcher --why "the prompt was fixed and reviewed"</code></pre>
+<p>Stopping an agent is a responder's act, from the command line or with <strong>Stop it</strong> on the Agents registry screen: the entry is disabled and every token it holds is revoked in the same act, so its bearers fail at their next request. Where receivers are configured (<code>aertun ssf receivers</code>), a signed session-revoked event tells them too, best effort; the stop stands here whether or not they hear it. Enabling it again is an administrator's act with a reason, and its old tokens stay dead. There is deliberately no switch that stops every agent at once.</p>
+<h2 id="watch">What agents did</h2>
+<p>The <strong>Agents</strong> board lists every agent observed in the last seven days, from the agent interface's own records and from GenAI telemetry pushed over OTLP: calls, refusals, proposals, first and last seen, and whether each is registered. Every call is recorded under the agent's registered name, and the detection rules read those records like any other platform's events.</p>
+<p>Whether an agent's own account of a run holds against what was seen is a proof: <a href="/proofs/#reconcile">agent reconcile</a>.</p>

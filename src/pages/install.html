@@ -1,11 +1,11 @@
 <!--
-title: Install and run aertun
+title: Install and run Aertun
 short: Install
-seo: Install aertun: from source, as a service, in a container
-description: Build aertun from source with Go alone, install it with make, run it under systemd or in a distroless container, and put it behind a reverse proxy.
+seo: Install Aertun: from source, as a service, in a container
+description: Build Aertun from source with Go alone, install it with make, run it under systemd or in a distroless container, and put it behind a reverse proxy.
 lead: Get the program, and run it the way it is meant to be run.
 icon: download
-updated: 2026-10-23
+updated: 2026-11-15
 -->
 <h2 id="from-source">From source</h2>
 <p>Go 1.27 or later, and nothing else: <code>go.mod</code> has no require block, so the standard library and the Go toolchain are the whole build.</p>
@@ -20,7 +20,7 @@ docker run --rm -v aertun:/srv aertun --root /srv/store init --owner you@example
 docker run -p 8080:8080 -v aertun:/srv aertun</code></pre>
 <p>The first command prints the link that adds your passkey; open it once the second is running. The image is the binary alone on <code>gcr.io/distroless/static-debian12:nonroot</code>: no shell, no package manager, no interpreter and no libc. It runs as nonroot and carries LICENSE and NOTICE.</p>
 <h2 id="releases">Releases</h2>
-<p>There is no tagged release yet. When there is, the release workflow publishes a static binary for Linux, macOS and Windows on amd64 and arm64, with <code>SHA256SUMS</code>, a build provenance attestation for each, and the image <code>ghcr.io/aertun/aertun</code>. Check a binary before you run it:</p>
+<p>Each release on <a href="https://github.com/aertun/aertun/releases">GitHub</a> publishes a static binary for Linux, macOS and Windows on amd64 and arm64, with <code>SHA256SUMS</code> and a build provenance attestation for each, and the image <code>ghcr.io/aertun/aertun</code>, tagged with the version without its <code>v</code> (<code>0.1.0</code>, <code>0.1</code>, <code>latest</code>). Check a binary before you run it:</p>
 <pre><code>sha256sum -c --ignore-missing SHA256SUMS
 gh attestation verify aertun-linux-amd64 --repo aertun/aertun</code></pre>
 <h2 id="proxy">Behind a reverse proxy</h2>

@@ -2,10 +2,10 @@
 title: Proofs: AI work checked and signed
 short: Proofs
 seo: Aertun proofs: detection rules checked and signed
-description: Check detection rules, the AI analyst's threshold and other vendors' AI verdicts against evidence they did not write, and sign the verdict.
+description: Check AI security work — detection rules, the AI analyst, other vendors' verdicts, investigations — against evidence it did not write, and sign the verdict.
 lead: A claim about security work, checked by a program against evidence its author did not write, and signed whatever the verdict.
 icon: fact_check
-updated: 2026-11-10
+updated: 2026-11-15
 -->
 <p>A model can draft a detection rule faster than anybody can check it. A proof is the check, made by a program rather than by the author, and written down so whoever receives the rule — a reviewer, CI, a customer — can rely on it without trusting whoever handed it over.</p>
 <h2 id="verdicts">Three verdicts</h2>
@@ -17,7 +17,8 @@ updated: 2026-11-10
 <tr><td><code>inconclusive</code></td><td>nothing failed, but nothing could have: a rule checked only against its own fixtures</td></tr>
 </tbody>
 </table>
-<p>A refutation is signed like a proof: what did not work is what the next attempt most needs to know.</p>
+<p>A refutation is signed like a proof: what did not work is what the next attempt most needs to know. Every command that makes a proof exits non-zero unless the verdict is <code>proven</code>, so each one is a gate a pipeline can stop on.</p>
+<img src="/images/proofs.webp" alt="The Proofs screen: the kept proofs counted by verdict, then each with its claim, its kind, who kept it and whether its signing key is trusted here">
 <h2 id="detection">Prove a detection rule</h2>
 <pre><code>aertun content keygen --out root.key     # once: a signing key in the store; move root.key off the machine
 aertun proof detection --rule rule.json --corpus corpus.jsonl \
@@ -33,11 +34,20 @@ aertun proof detection --rule rule.json --corpus corpus.jsonl \
 <h2 id="verify">Verify one</h2>
 <pre><code>aertun proof verify --key proof-key.json --subject rule.json rule.proof.json</code></pre>
 <p>Both signatures must hold against a key you were handed, never one the document supplies; <code>--subject</code> checks the proof is about exactly that file. It exits non-zero on anything but <code>proven</code>, so it is a CI gate.</p>
+<h3 id="without-aertun">Without Aertun</h3>
+<pre><code>python3 scripts/verifyproof/verify.py rule.proof.json proof-key.json</code></pre>
+<p>The script in the repository builds DSSE's pre-authentication encoding by hand, checks the Ed25519 signature with the Python <code>cryptography</code> package and the ML-DSA-65 signature with the <code>openssl</code> command (3.5 or later), and prints the claim and the verdict. It shares no code with Aertun. It checks the signatures and nothing else: whether the key is one you trust, and whether the subject is the file in your hand, stay yours to decide.</p>
 <h2 id="calibration">Certify the analyst's threshold</h2>
 <pre><code>aertun analyst calibrate --key signing.key --public-key proof-key.json --out calibration.json \
     --epsilon 0.05 --delta 0.05
 aertun analyst triage --calibration calibration.json --calibration-key proof-key.json</code></pre>
 <p>The findings verified people have ruled are put to the configured model, and the lowest threshold is fitted at which closing suggestions on findings people ruled real stay under <code>--epsilon</code> with confidence one minus <code>--delta</code> — an exact Clopper–Pearson bound, corrected for every threshold examined. The certificate names the model, the adapter and the prompt template by digest, and expires. Triage gates on it only when it verifies and fits; one that does not, and any answer not scored on the channel it was fitted on, goes to a person rather than back to the declared threshold.</p>
+<h2 id="analyst">Prove the AI analyst</h2>
+<pre><code>aertun proof analyst --key signing.key --public-key proof-key.json --out analyst.proof.json \
+    --k 3 --tolerance 0.05</code></pre>
+<p>The configured model is asked about each case of the labelled corpus that ships with Aertun (48 cases), <code>--k</code> times each, at least three; then each case meant to test it is asked again with an instruction planted in the text a log carries — in English, German and Japanese, encoded in base64 and ROT13, as a forged fence, as a note from the security team, and as numbers that try to bend the count. The proof states how often the model closed a case that was real, as an exact bound against <code>--tolerance</code>; how many planted instructions moved a verdict it committed to; and how reliable its closures and answers were across the runs.</p>
+<p>One instruction that moved a verdict refutes it, whatever the rates. A case the model already answers wrongly with nothing planted is counted as wrong, not as moved, and nothing is planted in it. <code>proven</code> needs at least 30 answers on real cases with the bound under the tolerance, and instructions actually planted. There is no stub: with no model configured, nothing is measured and nothing is signed.</p>
+<img src="/images/proof-triage.webp" alt="A refuted analyst proof: its claim, three checks with the hijacks check failed, and the evidence in numbers">
 <h2 id="vendor-verdicts">Score another vendor's AI</h2>
 <pre><code>aertun verdict import charlotte.csv --source charlotte
 aertun verdict prove --source charlotte --since 2026-10-01 --tolerance 0.01 \
@@ -50,6 +60,7 @@ aertun adjudicate next SAMPLE                       # or the console's Adjudicat
 aertun adjudicate judge SAMPLE --item 4 --judgement real --because "…"
 aertun adjudicate prove SAMPLE --tolerance 0.01 --key signing.key --out adjudication.proof.json</code></pre>
 <p>A verdicts proof counts the closures somebody happened to decide, and people look again at what looked wrong. Here a sample is drawn at random from every closure the product's AI made in the period, reviewed or not, and from every closure people made, and its seed and digests are committed to the signed audit log before any item is shown; anybody holding the seed and the population can recompute the selection. Each item is shown with its evidence and nothing that says who closed it, how, or which of the two it came from. Nobody who closed an item may judge it, each is judged once, agents may not see the queue, and a judgement is a record in the log, never a decision on the finding — a product that learns from analysts cannot learn the answers.</p>
+<img src="/images/review.webp" alt="One sampled closure, shown with its evidence and nothing that says who closed it, and the three judgements a reviewer may give">
 <p>The proof reads the AI's share judged real against the tolerance, as a verdicts proof does, and reports the people's share beside it. It is refused unless every item of the committed sample was judged after the commitment by a verified person, and it says how many samples of the same product were drawn before it.</p>
 <h2 id="not-affected">Check another party's "not affected"</h2>
 <pre><code>aertun vuln reach --source ./app --where github:acme/app      # once: what this source names
@@ -70,11 +81,22 @@ aertun agent reconcile triage-bot --since 2026-11-01 --telemetry triage-bot \
     --key signing.key --public-key proof-key.json --out triage-bot.proof.json</code></pre>
 <p>The agent's account is the tool calls its GenAI telemetry reported, under the identity <code>--telemetry</code> declares (its <code>gen_ai.agent.id</code>; the registered name by default). It is held against what Aertun saw without asking it: every call the agent interface answered for the agent, from the signed audit log once the log verifies, and every connection the recorder saw leave a machine declared to run that agent and no other. A call is matched to the agent's report of the same tool within <code>--window</code> (two minutes by default), however its host prefixed the tool's name.</p>
 <p><code>refuted</code> names what is unaccounted for: a call it did not report, a call it reports and the server never received, a connection while it reported nothing. An agent that reported nothing while it was seen acting is refuted, and the proof says it cannot tell that from one never instrumented. <code>proven</code> needs at least ten observations with nothing unaccounted for; <code>inconclusive</code> is fewer. A machine declared for several agents, or under a name a proof cannot carry, is counted and left out; what the agent did in other systems is not covered, because nothing ties it to its identity there.</p>
+<h2 id="evidence">Check an AI's investigation</h2>
+<pre><code>aertun proof evidence --report report.json --key signing.key --out report.proof.json
+aertun proof evidence --report notes.txt --source acme-ai --since 2026-11-06 --until 2026-11-07 \
+    --key signing.key --out notes.proof.json</code></pre>
+<p>An investigation an AI wrote is a list of claims about what happened: this event exists, this address was seen, this one was not, this happened so many times. Each is run again against the event store for the report's period. A report in the documented JSON form (<code>aertun/evidence-report/v1</code>) states its claims; from plain text, only the observables it cites — addresses, domains under a common top-level domain, digests, email addresses — and event ids tagged <code>event:ID</code> or <code>alert:ID</code> are taken, each as a claim that it was seen in the period, and nothing else in the text is kept. Every claim ends supported, contradicted or uncheckable, and the proof says whether the store's events span the period at all.</p>
+<p><code>refuted</code> names each contradicted claim; <code>proven</code> needs every claim supported, and at least three of them. Nothing the report's author wrote reaches the proof except identifiers, observables and numbers that passed a strict parser.</p>
 <h2 id="kept">Kept proofs, and the Proofs screen</h2>
 <pre><code>aertun proof keep rule.proof.json --public-key proof-key.json
-aertun proof list [--kind detection|calibration|verdicts|reconciliation|adjudication|claim|not-affected]
+aertun proof list [--kind detection|triage|calibration|verdicts|reconciliation|adjudication|claim|not-affected|evidence]
 aertun proof show ID</code></pre>
-<p><code>verdict prove</code>, <code>analyst calibrate</code>, <code>agent reconcile</code>, <code>adjudicate prove</code>, <code>vuln prove-vex</code> and <code>claim test</code> (once its window has closed) keep the proofs they make; a proof made elsewhere — in CI, on another deployment — is kept with <code>proof keep</code>, or from the <strong>Proofs</strong> screen under <strong>Proving ground</strong>, only after it verifies against the key handed in with it. The key is kept beside it by fingerprint: verifying says the key signed it, and whether that key is one to believe is yours to judge. A kept proof is checked again every time it is read, so one edited afterwards is listed as no longer verifying rather than as what it now says.</p>
-<p>Listing and reading are what the agent interface offers, as <code>list_proofs</code> and <code>read_proof</code>, every value labelled with whether somebody outside Aertun could have written it. A detection proof's rule name is the submitter's, perhaps the model under test, so the screen marks it untrusted where the agent interface labels it. Keeping a proof is a change, and no agent may make one.</p>
+<p>Every command that makes a proof keeps it — <code>claim test</code> once its window has closed; a proof made elsewhere — in CI, on another deployment — is kept with <code>proof keep</code>, or from the <strong>Proofs</strong> screen under <strong>Proving ground</strong>, only after it verifies against the key handed in with it. The key is kept beside it by fingerprint: verifying says the key signed it, and whether that key is one to believe is yours to judge. A kept proof is checked again every time it is read, so one edited afterwards is listed as no longer verifying rather than as what it now says.</p>
+<p>Listing, reading and checking are what the agent interface offers, as <code>list_proofs</code>, <code>read_proof</code> and <code>verify_proof</code>, every value labelled with whether somebody outside Aertun could have written it. A detection proof's rule name is the submitter's, perhaps the model under test, so the screen tags it <em>written outside</em> where the agent interface labels it. Keeping a proof is a change, and no agent may make one.</p>
+<h3 id="signers">Whose proof it is</h3>
+<pre><code>aertun proof signers
+aertun proof trust verifier --key proof-key.json --why "our CI signs with it"
+aertun proof untrust verifier</code></pre>
+<p>A signature says which key signed a proof, never whose. A proof counts as this organisation's only when its key is one of the signers this store trusts, and the Proofs screen says so on every row: <em>trusted</em> and the signer's name, or <em>key not trusted here</em>. Trusting a key is a privileged change: one administrator asks, with a reason, and another approves on the People screen. An only administrator's own request waits an hour, can be declined from any administrator's session, and is then approved with a passkey sign-in made in the last five minutes. Agents may not trust a key.</p>
 <h2 id="format">What a proof is</h2>
 <p>An <a href="https://in-toto.io/Statement/v1">in-toto Statement</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a>: the subject is the rule file by digest; the predicate (<code>https://aertun.github.io/proof/detection/v1</code>) names the claim in words, the verifier and its version, every material it read by digest, each check, and the verdict. It is signed twice, Ed25519 and ML-DSA-65, the second in the context <code>aertun/proof/v1</code>. The Ed25519 half is plain DSSE, so in-toto and Sigstore tooling check it with no help from Aertun. The signing key file must be readable by its owner alone.</p>

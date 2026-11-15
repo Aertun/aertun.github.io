@@ -1,18 +1,18 @@
 <!--
 title: Approvals
 short: Approvals
-seo: aertun approvals: what is waiting for a second person
+seo: Aertun approvals: what is waiting for a second person
 description: One screen for everything waiting for you: actions on other platforms, runs an automation held, and privileged changes that need a second administrator.
 lead: Everything waiting for you to decide, in one place.
 icon: approvals
 screens: Approvals
-updated: 2026-11-07
+updated: 2026-11-15
 -->
 <p>Three things wait for a person, and each is decided by somebody other than whoever asked for it:</p>
 <ul>
 <li><strong>An action on another platform</strong>, asked for on a case.</li>
 <li><strong>A run an automation held</strong>, because its mode is ask.</li>
-<li><strong>A privileged change</strong>: making somebody an administrator, issuing an administrator's token, weakening a setting, lowering how many approvals a change needs, or moving the audit log.</li>
+<li><strong>A privileged change</strong>: making somebody an administrator, issuing an administrator's token, trusting a proof signer, weakening a setting, lowering how many approvals a change needs, or moving the audit log.</li>
 </ul>
 <pre><code>aertun approvals
 aertun incident act-approve ID N
@@ -22,7 +22,7 @@ aertun pending approve ID</code></pre>
 <h2 id="alone">When you are the only administrator</h2>
 <p>A privileged change asked for by the only administrator is slowed, not blocked:</p>
 <ul>
-<li>It needs a reason, given with the command's own option (<code>--note</code> on a grant, <code>--why</code> on an administrator's token or an audit log move, <code>--accept-risk</code> on a weaker setting) or written on the screen. The reason is kept in the request and in its audit record, because nobody else's approval stands beside it.</li>
+<li>It needs a reason, given with the command's own option (<code>--note</code> on a grant, <code>--why</code> on an administrator's token, a proof signer or an audit log move, <code>--accept-risk</code> on a weaker setting) or written on the screen. The reason is kept in the request and in its audit record, because nobody else's approval stands beside it.</li>
 <li>It waits an hour — a day to move the audit log or pass on ownership — and Aertun's detections over its own audit log raise it. Any administrator's session can decline it while it waits.</li>
 <li>Approving your own request needs a passkey sign-in from the last five minutes. The People screen asks for your passkey when your sign-in is older; a command-line token is not a passkey sign-in, so <code>aertun pending approve</code> points you to the screen for your own requests.</li>
 </ul>

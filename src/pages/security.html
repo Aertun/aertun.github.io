@@ -1,15 +1,15 @@
 <!--
-title: How aertun defends itself
+title: How Aertun defends itself
 short: Security
-seo: How aertun defends itself: egress, vault, sessions, MFA
-description: What aertun may connect to and why, credentials sealed in a vault, a separate log writer, two factors for all, session limits and an AI that only suggests.
+seo: How Aertun defends itself: egress, vault, sessions, MFA
+description: What Aertun may connect to and why, credentials sealed in a vault, a separate log writer, two factors for all, session limits and an AI that only suggests.
 lead: Its own network purposes, sealed credentials, separate log writer and session limits.
 icon: security
-updated: 2026-10-23
+updated: 2026-11-15
 -->
 <h2 id="network">What it may connect to</h2>
 <pre><code>aertun network</code></pre>
-<p>Every outbound connection is for one declared purpose: an action, anchoring, a connector, mail, the AI analyst's model, the SIEM stream, shared signals, Slack reminders, single sign-on and notice webhooks. An undeclared purpose is refused in every mode, and <code>network.mode offline</code> refuses everything that would leave the host.</p>
+<p>Every outbound connection is for one declared purpose: an action, anchoring, a connector, mail, the AI analyst's model, the SIEM stream, shared signals, Slack reminders, single sign-on and notice webhooks. An undeclared purpose is refused in every mode, and <code>network.mode offline</code> refuses everything that would leave the host. A destination that should be on the internet — a connector, an identity provider, a webhook — is refused at a private address unless a range is declared for it, as <code>aertun oidc configure --reach</code> does for a provider run in-house; a model with no key, the other way round, must be on this machine's network. Nothing reaches link-local, where cloud metadata lives.</p>
 <h2 id="vault">Sealed credentials</h2>
 <pre><code>aertun vault status
 aertun vault rotate</code></pre>
@@ -17,6 +17,8 @@ aertun vault rotate</code></pre>
 <h2 id="sign-in">Sign-in</h2>
 <p>Everybody signs in with two factors: a passkey that checks it is them, or single sign-on that says it used two. Failed sign-ins lock out places, not people, and sessions end after an hour unused, fifteen minutes for anybody who can grant access.</p>
 <h2 id="ai">The AI only suggests</h2>
-<p>The AI analyst and agents over MCP read and propose. Neither can record a decision, approve an action, change who may do what, or reach another platform. See <a href="/findings/">Findings</a> and <a href="/mcp/">AI agents over MCP</a>.</p>
+<p>The AI analyst and agents over MCP read and propose. Neither can record a decision, approve an action, change who may do what, sign or keep a proof, or reach another platform. Every agent is registered before it acts and can be stopped in one act. See <a href="/findings/">Findings</a>, <a href="/agents/">AI agents</a> and <a href="/mcp/">AI agents over MCP</a>.</p>
+<h2 id="proofs">Proofs anybody can check</h2>
+<p>A proof is signed with Ed25519 and ML-DSA-65 over DSSE's pre-authentication encoding, and checks without Aertun: <code>scripts/verifyproof/verify.py</code> uses Python's <code>cryptography</code> package and OpenSSL. A proof counts as this organisation's only when its key is a trusted signer, which takes two administrators. See <a href="/proofs/#signers">Whose proof it is</a>.</p>
 <h2 id="reporting">Reporting a vulnerability</h2>
 <p>Use GitHub's <a href="https://github.com/aertun/aertun/security/advisories/new">private vulnerability reporting</a> for the repository.</p>

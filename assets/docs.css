@@ -106,6 +106,14 @@ a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: var(--focus-width) solid var(--focus-ring); outline-offset: var(--focus-offset); }
 a:not([class]):focus-visible { border-radius: var(--shape-xs); }
 img { max-width: 100%; height: auto; }
+/* The tour: a still-image video with captions, and its transcript under it
+   for anybody who would rather read, or cannot listen. */
+.tour { max-width: 64rem; margin: 0 0 3rem; }
+.tour video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: var(--shape-lg);
+  background: #0A1F44; border: 1px solid var(--outline-variant); }
+.transcript { margin-top: 1rem; }
+.transcript > summary { cursor: pointer; font: var(--title-md); color: var(--primary); padding: .5rem 0; min-height: 24px; }
+.transcript > p { max-width: 46rem; }
 code, kbd, pre { font-family: var(--mono); }
 code { font-size: 0.9em; overflow-wrap: anywhere; }
 .icon { width: 24px; height: 24px; fill: currentColor; flex: none; }

@@ -1,21 +1,25 @@
 <!--
 title: AI agents over MCP
 short: AI agents (MCP)
-seo: aertun MCP server: AI agents that read and propose
-description: Connect an AI agent to aertun over the Model Context Protocol: eight operations behind three tools, to read findings and propose decisions, never to act.
-lead: Eight operations behind three tools, for an agent that reads and proposes.
+seo: Aertun MCP server: AI agents that read and propose
+description: Connect an AI agent to Aertun over the Model Context Protocol: twelve operations behind three tools, to read, check proofs and propose, never to act.
+lead: Twelve operations behind three tools, for an agent that reads, checks and proposes.
 icon: hub
-updated: 2026-10-23
+updated: 2026-11-15
 -->
 <pre><code>aertun mcp --list
 AERTUN_TOKEN=... aertun mcp</code></pre>
-<p>The agent interface speaks MCP over standard input and output, as the person whose token it carries, with that person's access and no more. An agent loads only the operations it searches for.</p>
+<p>The agent interface speaks MCP over standard input and output, and over streamable HTTP at <code>/mcp</code> beside the console, where an agent authenticates with OAuth 2.1 (PKCE, and DPoP-bound tokens) or a token. It acts as the person or agent whose credential it carries, with that access and no more. An agent loads only the operations it searches for with <code>aertun_find</code>.</p>
 <table>
 <thead><tr><th>Operation</th><th>What it does</th></tr></thead>
 <tbody>
 <tr><td><code>list_findings</code></td><td>the finding queue, most urgent first</td></tr>
 <tr><td><code>read_finding</code></td><td>one finding: why it ranks, its evidence, and what has been decided</td></tr>
-<tr><td><code>propose_finding_decision</code></td><td>suggest a decision on a finding for a person to make</td></tr>
+<tr><td><code>propose_finding_decision</code></td><td>suggest a decision on a finding for a person to make — the one write</td></tr>
+<tr><td><code>list_proofs</code></td><td>the proofs kept here: proven, refuted or inconclusive, and whose key signed each</td></tr>
+<tr><td><code>read_proof</code></td><td>one kept proof: its claim, checks, evidence and materials</td></tr>
+<tr><td><code>verify_proof</code></td><td>check a signed proof against its public key, and whether this store trusts that key</td></tr>
+<tr><td><code>list_claims</code></td><td>the claim cards registered, and when each window closes</td></tr>
 <tr><td><code>incident_status</code></td><td>open incidents: which clocks are running, late or not started</td></tr>
 <tr><td><code>detection_stats</code></td><td>what each rule has been worth, and what the numbers suggest changing</td></tr>
 <tr><td><code>vuln_plan</code></td><td>the smallest upgrades that clear the most vulnerability risk</td></tr>
@@ -23,4 +27,9 @@ AERTUN_TOKEN=... aertun mcp</code></pre>
 <tr><td><code>find</code></td><td>find a screen by words</td></tr>
 </tbody>
 </table>
-<p>An agent reading events is reading text an attacker chose, so nothing on this interface changes who may do what, approves an action, or reaches another platform.</p>
+<p>Every value an operation answers carries <code>attacker_writable</code>: whether somebody outside Aertun could have written it — a finding's title, a rule's name, a log's text. An agent reading events is reading text an attacker chose, so nothing on this interface changes who may do what, approves anything, signs or keeps a proof, or reaches another platform. A refusal is the answer, with the reason, and is recorded like every call.</p>
+<h2 id="twin">The same answers twice</h2>
+<pre><code>aertun twin record --out case.twin.json
+aertun mcp --twin case.twin.json</code></pre>
+<p>A recorded case answers from one file under its digest: the same bytes every time, proposals refused, and a file that no longer matches its digest refused outright — for putting the same investigation to an agent, or two agents, more than once.</p>
+<p>Registering agents, bounding their runs and stopping them: <a href="/agents/">AI agents</a>.</p>

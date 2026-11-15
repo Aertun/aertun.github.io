@@ -1,21 +1,26 @@
 <!--
 title: Single sign-on
 short: Single sign-on
-seo: aertun single sign-on: OpenID Connect and SAML
+seo: Aertun single sign-on: OpenID Connect and SAML
 description: Sign in through OpenID Connect or SAML. Single sign-on counts as two factors only when the identity provider says it used them, or a passkey is asked for.
 lead: OpenID Connect and SAML, counted as two factors only when the provider says so.
 icon: sso
 screens: Single sign-on
-updated: 2026-10-23
+updated: 2026-11-15
 -->
 <h2 id="oidc">OpenID Connect</h2>
-<pre><code>aertun oidc configure
+<pre><code>aertun oidc configure --issuer https://login.example.com --client-id aertun \
+    --redirect-uri https://aertun.example.com/auth/callback [--mfa-acr ...]
+aertun oidc configure --provider google|microsoft [--tenant ID] --client-id aertun \
+    --redirect-uri https://aertun.example.com/auth/callback
 aertun oidc check
 aertun oidc status</code></pre>
+<p>The provider's issuer is discovered, its keys fetched, and the sign-in uses the authorization code flow with PKCE. <code>--claim</code> chooses whether the person is their verified email or their subject; an unverified email is refused unless you say otherwise.</p>
+<p>A hosted provider is reached over the public internet and nothing else. A provider run inside the organisation — Keycloak, AD FS — is in a private range, which Aertun refuses to reach by default; <code>--reach 10.20.0.0/16</code> names the ranges it may reach for discovery, keys and the token call, and no others. No range reaches link-local, where cloud metadata lives.</p>
 <h2 id="saml">SAML</h2>
 <pre><code>aertun saml presets
 aertun saml add
 aertun saml metadata
 aertun saml list</code></pre>
 <h2 id="two-factors">Two factors</h2>
-<p>A sign-in through the identity provider counts as two factors only when the provider says it used them: for OpenID Connect, the <code>amr</code> and <code>acr</code> claims with a recent <code>auth_time</code>; for SAML, the authentication context. When it does not say, aertun asks for the person's passkey as well.</p>
+<p>A sign-in through the identity provider counts as two factors only when the provider says it used them: for OpenID Connect, the <code>amr</code> and <code>acr</code> claims with a recent <code>auth_time</code>; for SAML, the authentication context. When it does not say, Aertun asks for the person's passkey as well.</p>
