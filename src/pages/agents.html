@@ -6,7 +6,7 @@ description: Register AI agents before they act, bound each run with a token, le
 lead: Every agent is registered before it acts, bounded per run, and can be stopped in one act.
 icon: hub
 screens: Agents
-updated: 2026-11-15
+updated: 2026-11-16
 -->
 <p>An AI agent reaching Aertun is a principal of its own: it reads, it may propose, and it never approves, signs, keeps a proof or acts on another platform. What it may do is the narrowest of three things — its entry in the register, the grants of the person it acts for, and the limits of the credential it presents.</p>
 <h2 id="register">Register an agent</h2>
@@ -33,6 +33,7 @@ aertun agent consents revoke ID</code></pre>
 <pre><code>aertun agent disable watcher --why "it began reading findings it was never asked about"
 aertun agent enable watcher --why "the prompt was fixed and reviewed"</code></pre>
 <p>Stopping an agent is a responder's act, from the command line or with <strong>Stop it</strong> on the Agents registry screen: the entry is disabled and every token it holds is revoked in the same act, so its bearers fail at their next request. Where receivers are configured (<code>aertun ssf receivers</code>), a signed session-revoked event tells them too, best effort; the stop stands here whether or not they hear it. Enabling it again is an administrator's act with a reason, and its old tokens stay dead. There is deliberately no switch that stops every agent at once.</p>
+<p>Whether the stop held — nothing acting as the agent afterwards, here or under the identities it is declared to have elsewhere — is a proof: <a href="/proofs/#revocation">proof revocation</a>.</p>
 <h2 id="watch">What agents did</h2>
 <p>The <strong>Agents</strong> board lists every agent observed in the last seven days, from the agent interface's own records and from GenAI telemetry pushed over OTLP: calls, refusals, proposals, first and last seen, and whether each is registered. Every call is recorded under the agent's registered name, and the detection rules read those records like any other platform's events.</p>
 <p>Whether an agent's own account of a run holds against what was seen is a proof: <a href="/proofs/#reconcile">agent reconcile</a>.</p>
