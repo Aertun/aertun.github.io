@@ -1,0 +1,52 @@
+<!--
+title: Proof format: a supplier's breach disclosure (v1)
+short: breach-scope/v1
+seo: Aertun proof format: breach-scope/v1
+description: The predicate https://aertun.github.io/proof/breach-scope/v1: what a proof about a supplier's breach disclosure claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/breach-scope/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>No indicator in a vendor&#x27;s disclosure of its own breach was seen in this organisation&#x27;s events outside the window the vendor gave, nor inside it when the vendor said this organisation was not affected.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when an indicator was seen before or after the window, or inside it when the vendor said this organisation was not affected, each named with how many events carried it; <strong>proven</strong> when nothing contradicts the disclosure and the store holds the whole of the window and of the margin either side, so an indicator not found was not there; <strong>inconclusive</strong> otherwise, naming the period the store does not hold. The disclosure&rsquo;s title is never read and its indicators are carried only in canonical form.</p>
+<pre><code>aertun vendor check-breach acme-2026-07.json --margin 720h --key signing.key --out acme.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>breach_scope</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.breach_scope</code></h2>
+<p>BreachScopeEvidence is what a breach-scope proof rests on.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>vendor</code></td><td><code>string</code></td><td>Vendor is the vendor, by the short name the operator gave it.</td></tr>
+<tr><td><code>reference</code></td><td><code>string</code></td><td>Reference is the disclosure&#x27;s identifier: an advisory or notice id.</td></tr>
+<tr><td><code>since</code></td><td><code>string</code></td><td>Since and Until are the window the vendor said the attacker was active in, RFC 3339; Until is not included.</td></tr>
+<tr><td><code>until</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>margin_seconds</code></td><td><code>int</code></td><td>Margin is how far before and after the window was searched, in seconds.</td></tr>
+<tr><td><code>told</code></td><td><code>string</code></td><td>Told is what the vendor told this organisation: affected, not-affected or unstated.</td></tr>
+<tr><td><code>indicators</code></td><td><code>[]BreachIndicator</code> — each as <code>{"type","value","before","during","after"}</code>: the indicator in canonical form and how many events carried it before, in and after the window</td><td>Indicators are each indicator and how many events carried it.</td></tr>
+<tr><td><code>held_before</code></td><td><code>bool</code></td><td>HeldBefore, HeldDuring and HeldAfter say whether the store holds the whole of the margin before, the window, and the margin after: where it does not, not finding an indicator shows nothing.</td></tr>
+<tr><td><code>held_during</code></td><td><code>bool</code></td><td></td></tr>
+<tr><td><code>held_after</code></td><td><code>bool</code></td><td></td></tr>
+<tr><td><code>events</code></td><td><code>int</code></td><td>Events is how many events in the three periods were read.</td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>
