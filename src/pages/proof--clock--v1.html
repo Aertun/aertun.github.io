@@ -1,0 +1,52 @@
+<!--
+title: Proof format: an incident's clock (v1)
+short: clock/v1
+seo: Aertun proof format: clock/v1
+description: The in-toto predicate https://aertun.github.io/proof/clock/v1: what a proof about an incident's clock claims, its fields, its verdict rule, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/clock/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>An incident&#x27;s decision — aware, major, material, personal, health or mitigated — was recorded by a verified person in an entry of Aertun&#x27;s signed audit log, the incident&#x27;s own record agrees with it, the entry is under a log head anchored in Bitcoin, and every obligation the decision started was discharged by its deadline.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when the log has no entry for the decision, the incident&rsquo;s record of it or of a discharge disagrees with the log, an anchored log head no longer matches the log, or an obligation was discharged late or is past due, each named; <strong>proven</strong> when none of that, the decision was made by a verified person, a confirmed Bitcoin attestation covers its entry, and every obligation is discharged or ruled out; <strong>inconclusive</strong> otherwise: no anchor yet, an unverified person, or a clock still running. The deadlines are the published headline ones; the proof is arithmetic on clocks people started, not legal advice.</p>
+<pre><code>aertun incident prove inc-20261110-abc123 --trigger aware --key signing.key --out aware.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>clock</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.clock</code></h2>
+<p>ClockEvidence is what a clock proof rests on.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>incident</code></td><td><code>string</code></td><td>Incident is the incident&#x27;s identifier.</td></tr>
+<tr><td><code>trigger</code></td><td><code>string</code></td><td>Trigger is the decision: aware, major, material, personal, health or mitigated.</td></tr>
+<tr><td><code>entry</code></td><td><code>int</code></td><td>Entry is the audit entry that recorded the decision; zero when the log has none.</td></tr>
+<tr><td><code>decided</code></td><td><code>string</code></td><td>Decided is when the log recorded it, RFC 3339 to the nanosecond.</td></tr>
+<tr><td><code>recorded</code></td><td><code>string</code></td><td>Recorded is when the incident&#x27;s own record says it was made.</td></tr>
+<tr><td><code>verified</code></td><td><code>bool</code></td><td>Verified says the person who made it proved who they were.</td></tr>
+<tr><td><code>anchor</code></td><td><code>*ClockHead</code> — <code>{"size","root","block","calendar"}</code>: a log head, the Bitcoin block its attestation is in, and the calendar&rsquo;s host</td><td>Anchor is the earliest head covering the entry with a confirmed Bitcoin attestation that still matches the log.</td></tr>
+<tr><td><code>broken</code></td><td><code>[]ClockHead</code> — <code>{"size","root","block","calendar"}</code>: a log head, the Bitcoin block its attestation is in, and the calendar&rsquo;s host</td><td>Broken are anchored heads that no longer match the log.</td></tr>
+<tr><td><code>linked</code></td><td><code>int</code></td><td>Linked is how many findings were linked to the incident when the decision was made.</td></tr>
+<tr><td><code>lead_seconds</code></td><td><code>int</code></td><td>Lead is how long before the decision the earliest of them was first seen, in seconds.</td></tr>
+<tr><td><code>duties</code></td><td><code>[]ClockDuty</code> — each as <code>{"regime","due","done","waived","moved","recorded","outcome"}</code>: an obligation by its name in the table, its deadline, when the log recorded it discharged, and <code>met</code>, <code>late</code>, <code>open</code> or <code>waived</code></td><td>Duties are the obligations the decision started.</td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

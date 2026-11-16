@@ -6,7 +6,7 @@ description: Incidents with the clocks GDPR, NIS2, DORA, the Cyber Resilience Ac
 lead: Incidents with the clocks each law starts, and actions a second person approves.
 icon: cases
 screens: Cases
-updated: 2026-10-23
+updated: 2026-11-16
 -->
 <ol class="steps">
 <li><h3>Choose the regimes that apply</h3><pre><code>aertun incident regimes eu nis2</code></pre><p>With none set, a new incident starts with no obligations and no clocks.</p></li>
@@ -15,6 +15,8 @@ updated: 2026-10-23
 aertun incident duties</code></pre></li>
 <li><h3>Discharge or waive each duty</h3><pre><code>aertun incident discharge ID "NIS2 early warning" --because "sent to the CSIRT"
 aertun incident waive ID "GDPR Article 34" --because "no personal data involved"</code></pre></li>
+<li><h3>Prove when the clock started</h3><pre><code>aertun auditlog anchor             # once the decision is recorded; anchor upgrade collects the block
+aertun incident prove ID --trigger aware --key signing.key --out aware.proof.json</code></pre><p>The decision's time and every discharge's are taken from the signed audit log, and the incident's own record is held against them: a clock moved afterwards, an anchored log head the log no longer matches, or a deadline missed refutes it. It is proven once a verified person's decision sits under a log head anchored in Bitcoin and every obligation it started is discharged or ruled out. See <a href="/proofs/#clock">Proofs</a>.</p></li>
 <li><h3>Work a playbook</h3><pre><code>aertun incident playbooks
 aertun incident propose ID account-compromise
 aertun incident step ID account-compromise STEP done --because "..."</code></pre><p>The shipped playbooks cover account compromise, phishing, malware on an endpoint, a lost device and exposed data.</p></li>
