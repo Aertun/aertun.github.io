@@ -3,8 +3,8 @@
   <url><loc>https://aertun.github.io/start/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://aertun.github.io/install/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/concepts/</loc><lastmod>2026-10-23</lastmod></url>
-  <url><loc>https://aertun.github.io/proofs/</loc><lastmod>2026-11-15</lastmod></url>
-  <url><loc>https://aertun.github.io/agents/</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://aertun.github.io/proofs/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://aertun.github.io/agents/</loc><lastmod>2026-11-16</lastmod></url>
   <url><loc>https://aertun.github.io/windtunnel/</loc><lastmod>2026-11-06</lastmod></url>
   <url><loc>https://aertun.github.io/approvals/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/findings/</loc><lastmod>2026-10-23</lastmod></url>
@@ -34,6 +34,7 @@
   <url><loc>https://aertun.github.io/proof/evidence/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/not-affected/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/reconciliation/v1/</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://aertun.github.io/proof/revocation/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/triage/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/verdicts/v1/</loc><lastmod>2026-11-15</lastmod></url>
 </urlset>

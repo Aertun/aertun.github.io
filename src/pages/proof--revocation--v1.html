@@ -1,0 +1,56 @@
+<!--
+title: Proof format: a revocation (v1)
+short: revocation/v1
+seo: Aertun proof format: revocation/v1
+description: The in-toto predicate https://aertun.github.io/proof/revocation/v1: what a proof about a revocation claims, its fields, its verdict rule, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/revocation/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>After an agent was disabled with the kill switch, or an identity was revoked in another system, no source Aertun collects saw it act from the end of a grace period until the end of the period, and every source that had seen it act in the lookback before was delivering events throughout.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when anything acted as it after the grace, each use named by source, identity and time; attempts a source says it refused or failed are counted beside, not against it. <strong>proven</strong> when nothing did, at least one source had seen it act before, every such source delivered an event in every stretch of the period, and the period is at least an hour. Aertun&rsquo;s own signed audit log is complete for what an agent does through it, so its silence needs no stretches; an agent&rsquo;s own telemetry may refute and never supports. <strong>inconclusive</strong> otherwise, with the reason said.</p>
+<pre><code>aertun proof revocation --agent NAME --key signing.key --out revocation.proof.json
+aertun proof revocation --identity okta:00u1 --identity github:dana-ops --at 2026-11-10T12:00:00Z --key signing.key</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>revocation</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.revocation</code></h2>
+<p>RevocationEvidence is what a revocation proof rests on.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>kind</code></td><td><code>string</code></td><td>Kind is agent, for one disabled with the kill switch, or identity, for one revoked in another system.</td></tr>
+<tr><td><code>name</code></td><td><code>string</code></td><td>Name is the revoked agent, or the identity revoked.</td></tr>
+<tr><td><code>identities</code></td><td><code>[]string</code></td><td>Identities are every issuer:value it was matched on.</td></tr>
+<tr><td><code>revoked</code></td><td><code>string</code></td><td>Revoked is when it was revoked, RFC 3339 to the nanosecond the revocation was recorded at.</td></tr>
+<tr><td><code>revoked_entry</code></td><td><code>int</code></td><td>RevokedEntry is the audit entry that recorded the revocation, when this program made it.</td></tr>
+<tr><td><code>grace_seconds</code></td><td><code>int</code></td><td>Grace is how long after the revocation nothing is counted.</td></tr>
+<tr><td><code>until</code></td><td><code>string</code></td><td>Until is the end of the period, not included.</td></tr>
+<tr><td><code>lookback_seconds</code></td><td><code>int</code></td><td>Lookback is how far before the revocation a source&#x27;s having seen it act counts.</td></tr>
+<tr><td><code>stretch_seconds</code></td><td><code>int</code></td><td>Stretch is how long a source may go without delivering an event and still count as listening.</td></tr>
+<tr><td><code>stretches</code></td><td><code>int</code></td><td>Stretches is how many stretches the period was divided into.</td></tr>
+<tr><td><code>sources</code></td><td><code>[]RevocationSource</code> — each as <code>{"source","seen_before","uses","refused","quiet_stretches","complete","own_account"}</code>: what one source showed, how many stretches it delivered nothing in, whether it is Aertun&rsquo;s own complete log, and whether it is the subject&rsquo;s own account</td><td>Sources are the sources that saw it, before or after, and this program&#x27;s own log for an agent.</td></tr>
+<tr><td><code>uses</code></td><td><code>int</code></td><td>Uses is how many acts there were after the grace.</td></tr>
+<tr><td><code>refused</code></td><td><code>int</code></td><td>Refused is how many attempts after the grace the sources say they refused or failed: the revocation holding while somebody still holds the credential.</td></tr>
+<tr><td><code>min_period_seconds</code></td><td><code>int</code></td><td>MinPeriod is the shortest period after the grace a proven verdict may cover.</td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

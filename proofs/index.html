@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://aertun.github.io/proofs/">
 <meta property="og:image" content="https://aertun.github.io/assets/social.png">
 <meta property="og:locale" content="en_GB">
-<meta property="article:modified_time" content="2026-11-15">
+<meta property="article:modified_time" content="2026-11-16">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Aertun proofs: detection rules checked and signed">
 <meta name="twitter:description" content="Check AI security work — detection rules, the AI analyst, other vendors&#39; verdicts, investigations — against evidence it did not write, and sign the verdict.">
@@ -28,7 +28,7 @@
 <link rel="sitemap" type="application/xml" href="/sitemap.xml">
 <script>try{var t=localStorage.getItem("vg-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}document.documentElement.classList.add("js")</script>
 <script src="/assets/docs.js" defer></script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://aertun.github.io/#project","@type":"Organization","logo":"https://aertun.github.io/assets/mark.png","name":"The aertun project","sameAs":["https://github.com/aertun/aertun"],"url":"https://github.com/aertun"},{"@type":"TechArticle","about":{"@type":"SoftwareApplication","name":"aertun"},"author":{"@id":"https://aertun.github.io/#project"},"dateModified":"2026-11-15","description":"Check AI security work — detection rules, the AI analyst, other vendors' verdicts, investigations — against evidence it did not write, and sign the verdict.","headline":"Proofs: AI work checked and signed","image":"https://aertun.github.io/assets/social.png","inLanguage":"en","isPartOf":{"@type":"WebSite","name":"aertun manual","url":"https://aertun.github.io/"},"mainEntityOfPage":"https://aertun.github.io/proofs/","publisher":{"@id":"https://aertun.github.io/#project"},"url":"https://aertun.github.io/proofs/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://aertun.github.io/","name":"aertun manual","position":1},{"@type":"ListItem","item":"https://aertun.github.io/#proving-ai-work","name":"Proving AI work","position":2},{"@type":"ListItem","name":"Proofs","position":3}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://aertun.github.io/#project","@type":"Organization","logo":"https://aertun.github.io/assets/mark.png","name":"The aertun project","sameAs":["https://github.com/aertun/aertun"],"url":"https://github.com/aertun"},{"@type":"TechArticle","about":{"@type":"SoftwareApplication","name":"aertun"},"author":{"@id":"https://aertun.github.io/#project"},"dateModified":"2026-11-16","description":"Check AI security work — detection rules, the AI analyst, other vendors' verdicts, investigations — against evidence it did not write, and sign the verdict.","headline":"Proofs: AI work checked and signed","image":"https://aertun.github.io/assets/social.png","inLanguage":"en","isPartOf":{"@type":"WebSite","name":"aertun manual","url":"https://aertun.github.io/"},"mainEntityOfPage":"https://aertun.github.io/proofs/","publisher":{"@id":"https://aertun.github.io/#project"},"url":"https://aertun.github.io/proofs/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://aertun.github.io/","name":"aertun manual","position":1},{"@type":"ListItem","item":"https://aertun.github.io/#proving-ai-work","name":"Proving AI work","position":2},{"@type":"ListItem","name":"Proofs","position":3}]}]}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to the content</a>
@@ -201,6 +201,13 @@ aertun agent reconcile triage-bot --since 2026-11-01 --telemetry triage-bot \
     --key signing.key --public-key proof-key.json --out triage-bot.proof.json</code></pre>
 <p>The agent's account is the tool calls its GenAI telemetry reported, under the identity <code>--telemetry</code> declares (its <code>gen_ai.agent.id</code>; the registered name by default). It is held against what Aertun saw without asking it: every call the agent interface answered for the agent, from the signed audit log once the log verifies, and every connection the recorder saw leave a machine declared to run that agent and no other. A call is matched to the agent's report of the same tool within <code>--window</code> (two minutes by default), however its host prefixed the tool's name.</p>
 <p><code>refuted</code> names what is unaccounted for: a call it did not report, a call it reports and the server never received, a connection while it reported nothing. An agent that reported nothing while it was seen acting is refuted, and the proof says it cannot tell that from one never instrumented. <code>proven</code> needs at least ten observations with nothing unaccounted for; <code>inconclusive</code> is fewer. A machine declared for several agents, or under a name a proof cannot carry, is counted and left out; what the agent did in other systems is not covered, because nothing ties it to its identity there.</p>
+<h2 id="revocation">Show that a revocation held<a class="anchor" href="#revocation" aria-hidden="true" tabindex="-1">#</a></h2>
+<pre><code>aertun agent disable triage-bot --why "token leaked in a build log"
+aertun proof revocation --agent triage-bot --key signing.key --out triage-bot.revoked.json
+aertun proof revocation --identity okta:00u1 --identity github:dana-ops \
+    --at 2026-11-10T12:00:00Z --key signing.key --out dana.revoked.json</code></pre>
+<p>Revoking is how every incident ends, and nothing checks that it worked: a token cancelled in one console keeps working somewhere else, or an agent whose credentials here were cancelled carries on with others. A revocation proof looks. For an agent disabled with the kill switch, the moment is the audit entry the switch wrote, and what acted as the agent is read from three places: the signed audit log once it verifies (every call the agent interface answered for it and every token it exchanged), its own GenAI telemetry, and the event store under any <code>--identity</code> it is declared to act as elsewhere. For an identity revoked in another system, <code>--at</code> says when, and every collected source is read under exactly the issuer and value its connector writes, the pair <code>aertun hunt</code> shows as an event's actor.</p>
+<p><code>refuted</code> names each use after <code>--grace</code> (five minutes by default) by source, identity and time; an attempt a source says it refused or failed is counted beside, because it shows the revocation holding while somebody still holds the credential. <code>proven</code> needs a source that had seen the identity act within <code>--lookback</code> (seven days) before the revocation, and every such source delivering at least one event in every <code>--stretch</code> (an hour) of a period of at least an hour, so its silence means nothing happened rather than that it had stopped listening. The audit log is complete for what an agent does through Aertun, so it needs no stretches; the agent's own telemetry may refute and never supports, because an agent that stops reporting has not shown that it stopped. Anything else is <code>inconclusive</code>, and the proof says which of these it was. Systems Aertun does not collect, and identities nobody declared, are not covered.</p>
 <h2 id="evidence">Check an AI's investigation<a class="anchor" href="#evidence" aria-hidden="true" tabindex="-1">#</a></h2>
 <pre><code>aertun proof evidence --report report.json --key signing.key --out report.proof.json
 aertun proof evidence --report notes.txt --source acme-ai --since 2026-11-06 --until 2026-11-07 \
@@ -209,7 +216,7 @@ aertun proof evidence --report notes.txt --source acme-ai --since 2026-11-06 --u
 <p><code>refuted</code> names each contradicted claim; <code>proven</code> needs every claim supported, and at least three of them. Nothing the report's author wrote reaches the proof except identifiers, observables and numbers that passed a strict parser.</p>
 <h2 id="kept">Kept proofs, and the Proofs screen<a class="anchor" href="#kept" aria-hidden="true" tabindex="-1">#</a></h2>
 <pre><code>aertun proof keep rule.proof.json --public-key proof-key.json
-aertun proof list [--kind detection|triage|calibration|verdicts|reconciliation|adjudication|claim|not-affected|evidence]
+aertun proof list [--kind detection|triage|calibration|verdicts|reconciliation|adjudication|claim|not-affected|evidence|revocation]
 aertun proof show ID</code></pre>
 <p>Every command that makes a proof keeps it — <code>claim test</code> once its window has closed; a proof made elsewhere — in CI, on another deployment — is kept with <code>proof keep</code>, or from the <strong>Proofs</strong> screen under <strong>Proving ground</strong>, only after it verifies against the key handed in with it. The key is kept beside it by fingerprint: verifying says the key signed it, and whether that key is one to believe is yours to judge. A kept proof is checked again every time it is read, so one edited afterwards is listed as no longer verifying rather than as what it now says.</p>
 <p>Listing, reading and checking are what the agent interface offers, as <code>list_proofs</code>, <code>read_proof</code> and <code>verify_proof</code>, every value labelled with whether somebody outside Aertun could have written it. A detection proof's rule name is the submitter's, perhaps the model under test, so the screen tags it <em>written outside</em> where the agent interface labels it. Keeping a proof is a change, and no agent may make one.</p>
@@ -231,10 +238,11 @@ aertun proof untrust verifier</code></pre>
 <li><a href="/proof/reconciliation/v1/"><code>proof/reconciliation/v1</code></a> — an agent's own account</li>
 <li><a href="/proof/not-affected/v1/"><code>proof/not-affected/v1</code></a> — a VEX document</li>
 <li><a href="/proof/evidence/v1/"><code>proof/evidence/v1</code></a> — an AI's investigation</li>
+<li><a href="/proof/revocation/v1/"><code>proof/revocation/v1</code></a> — a revocation</li>
 </ul>
   </div>
   <footer class="guide-foot">
-    <p class="updated">Updated 2026-11-15 · <a href="https://github.com/aertun/aertun.github.io/blob/main/src/pages/proofs.html">Edit this page on GitHub</a></p>
+    <p class="updated">Updated 2026-11-16 · <a href="https://github.com/aertun/aertun.github.io/blob/main/src/pages/proofs.html">Edit this page on GitHub</a></p>
     <nav class="pager" aria-label="Previous and next guides">
       <a class="pager-prev" href="/concepts/" rel="prev"><span class="pager-dir"><svg class="icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false"><path d="m313-440 196 196q12 12 11.5 28T508-188q-12 11-28 11.5T452-188L188-452q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l264-264q11-11 27.5-11t28.5 11q12 12 12 28.5T508-715L313-520h447q17 0 28.5 11.5T800-480q0 17-11.5 28.5T760-440H313Z"/></svg>Previous</span><span class="pager-title">Glossary</span></a>
       <a class="pager-next" href="/agents/" rel="next"><span class="pager-dir">Next<svg class="icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false"><path d="M647-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h447L451-716q-12-12-11.5-28t12.5-28q12-11 28-11.5t28 11.5l264 264q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L508-188q-11 11-27.5 11T452-188q-12-12-12-28.5t12-28.5l195-195Z"/></svg></span><span class="pager-title">AI agents: registered, bounded, stoppable</span></a>
@@ -255,6 +263,7 @@ aertun proof untrust verifier</code></pre>
     <li><a href="#not-affected">Check another party&#39;s &#34;not affected&#34;</a></li>
     <li><a href="#claims">Pre-register a vendor&#39;s claim</a></li>
     <li><a href="#reconcile">Hold an agent to its own account</a></li>
+    <li><a href="#revocation">Show that a revocation held</a></li>
     <li><a href="#evidence">Check an AI&#39;s investigation</a></li>
     <li><a href="#kept">Kept proofs, and the Proofs screen</a></li>
     <li><a href="#format">What a proof is</a></li>
