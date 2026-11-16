@@ -212,6 +212,10 @@ aertun proof revocation --identity okta:00u1 --identity github:dana-ops \
 <pre><code>aertun incident prove inc-20261110-abc123 --trigger aware --key signing.key --out aware.proof.json</code></pre>
 <p>Every reporting deadline runs from a decision — awareness for GDPR and NIS2, classification as major for DORA, materiality for the SEC — and the first question a regulator asks is when it was made. Aertun records each decision in its signed audit log as it is made. A clock proof takes the decision's time and every discharge's from that log, verified first, and holds the incident's own record against them; it finds the earliest log head covering the decision with a confirmed Bitcoin attestation, re-reading the attestation from its own bytes and recomputing the head from the log; and it counts the findings linked when the decision was made and how long before it the earliest was first seen.</p>
 <p><code>refuted</code> names what failed: no entry for the decision, a time the incident's record and the log disagree on, an anchored head the log no longer matches, or an obligation discharged late or past due. <code>proven</code> needs a verified person's decision, a confirmed anchor over it, and every obligation it started discharged or ruled out; until then it is <code>inconclusive</code> and says which is missing. The deadlines are the published headline ones and the proof is arithmetic on clocks people started, not legal advice.</p>
+<h2 id="breach-scope">Hold a supplier's breach disclosure to your own logs<a class="anchor" href="#breach-scope" aria-hidden="true" tabindex="-1">#</a></h2>
+<pre><code>aertun vendor check-breach acme-2026-07.json --margin 720h --key signing.key --out acme.proof.json</code></pre>
+<p>When a supplier is breached its customers learn the scope by being told, and the first scope is often revised. Write the disclosure down as received — the vendor, the notice's identifier, the window the vendor says the attacker was active in, what it told you about being affected, and the indicators it published — in the form <code>aertun vendor check-breach -h</code> shows (<code>aertun/breach-disclosure/v1</code>). Each indicator is searched for in your event store the way an investigation's citations are run again: in the margin before the window, in it, and in the margin after it.</p>
+<p><code>refuted</code> names each indicator seen outside the window, and each seen inside it when the vendor said you were not affected, with how many events carried it. <code>proven</code> needs nothing contradicting the disclosure and the store holding the whole of all three periods, so an indicator not found was not there; otherwise it is <code>inconclusive</code> and names the period the store does not hold — a margin after the window that has not passed yet is one. The disclosure's title is never read, and indicators are carried only in canonical form.</p>
 <h2 id="evidence">Check an AI's investigation<a class="anchor" href="#evidence" aria-hidden="true" tabindex="-1">#</a></h2>
 <pre><code>aertun proof evidence --report report.json --key signing.key --out report.proof.json
 aertun proof evidence --report notes.txt --source acme-ai --since 2026-11-06 --until 2026-11-07 \
@@ -220,7 +224,7 @@ aertun proof evidence --report notes.txt --source acme-ai --since 2026-11-06 --u
 <p><code>refuted</code> names each contradicted claim; <code>proven</code> needs every claim supported, and at least three of them. Nothing the report's author wrote reaches the proof except identifiers, observables and numbers that passed a strict parser.</p>
 <h2 id="kept">Kept proofs, and the Proofs screen<a class="anchor" href="#kept" aria-hidden="true" tabindex="-1">#</a></h2>
 <pre><code>aertun proof keep rule.proof.json --public-key proof-key.json
-aertun proof list [--kind detection|triage|calibration|verdicts|reconciliation|adjudication|claim|not-affected|evidence|revocation|clock]
+aertun proof list [--kind detection|triage|calibration|verdicts|reconciliation|adjudication|claim|not-affected|evidence|revocation|clock|breach-scope]
 aertun proof show ID</code></pre>
 <p>Every command that makes a proof keeps it — <code>claim test</code> once its window has closed; a proof made elsewhere — in CI, on another deployment — is kept with <code>proof keep</code>, or from the <strong>Proofs</strong> screen under <strong>Proving ground</strong>, only after it verifies against the key handed in with it. The key is kept beside it by fingerprint: verifying says the key signed it, and whether that key is one to believe is yours to judge. A kept proof is checked again every time it is read, so one edited afterwards is listed as no longer verifying rather than as what it now says.</p>
 <p>Listing, reading and checking are what the agent interface offers, as <code>list_proofs</code>, <code>read_proof</code> and <code>verify_proof</code>, every value labelled with whether somebody outside Aertun could have written it. A detection proof's rule name is the submitter's, perhaps the model under test, so the screen tags it <em>written outside</em> where the agent interface labels it. Keeping a proof is a change, and no agent may make one.</p>
@@ -244,6 +248,7 @@ aertun proof untrust verifier</code></pre>
 <li><a href="/proof/evidence/v1/"><code>proof/evidence/v1</code></a> — an AI's investigation</li>
 <li><a href="/proof/revocation/v1/"><code>proof/revocation/v1</code></a> — a revocation</li>
 <li><a href="/proof/clock/v1/"><code>proof/clock/v1</code></a> — an incident's clock</li>
+<li><a href="/proof/breach-scope/v1/"><code>proof/breach-scope/v1</code></a> — a supplier's breach disclosure</li>
 </ul>
   </div>
   <footer class="guide-foot">
@@ -270,6 +275,7 @@ aertun proof untrust verifier</code></pre>
     <li><a href="#reconcile">Hold an agent to its own account</a></li>
     <li><a href="#revocation">Show that a revocation held</a></li>
     <li><a href="#clock">Show when an incident&#39;s clock started</a></li>
+    <li><a href="#breach-scope">Hold a supplier&#39;s breach disclosure to your own logs</a></li>
     <li><a href="#evidence">Check an AI&#39;s investigation</a></li>
     <li><a href="#kept">Kept proofs, and the Proofs screen</a></li>
     <li><a href="#format">What a proof is</a></li>
