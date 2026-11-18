@@ -169,6 +169,16 @@
 <tr><td><code>unexplained</code></td><td><code>int</code></td><td></td></tr>
 <tr><td><code>shared_skipped</code></td><td><code>int</code></td><td></td></tr>
 <tr><td><code>min_observed</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>gateway</code></td><td><code>string</code></td><td>Gateway is the model gateway&#x27;s record held against the account, as SOURCE:ACTOR — the source its calls are stored under and the key it names the agent&#x27;s calls by, as the operator declared; empty when none was. GatewayOnly is the declaration that the gateway is the agent&#x27;s only way to a model.</td></tr>
+<tr><td><code>gateway_only</code></td><td><code>bool</code></td><td></td></tr>
+<tr><td><code>gateway_calls</code></td><td><code>int</code></td><td>GatewayCalls is the gateway&#x27;s calls on that key in the period, GatewayMatched those in the agent&#x27;s own account and GatewayUnreported those not. ModelSpans is the agent&#x27;s own model calls in the period, and ModelUnseen those the gateway never saw, counted only when it is declared the only way to a model.</td></tr>
+<tr><td><code>gateway_matched</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>gateway_unreported</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>model_spans</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>model_unseen</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>identities</code></td><td><code>[]string</code></td><td>Identities are the agent&#x27;s identities in the systems it acts on, as SOURCE:ACTOR, as the operator declared them; Changes what those systems&#x27; own audits recorded of them in the period, and UnexplainedChanges those nothing the agent did, by its account or seen elsewhere, was near.</td></tr>
+<tr><td><code>changes</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>unexplained_changes</code></td><td><code>int</code></td><td></td></tr>
 </tbody>
 </table>
 <p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>

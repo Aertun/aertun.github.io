@@ -1,0 +1,64 @@
+<!--
+title: Proof format: a sealed alert (v1)
+short: sealed/v1
+seo: Aertun proof format: sealed/v1
+description: The in-toto predicate https://aertun.github.io/proof/sealed/v1: what a proof about a sealed alert claims, its fields, its verdict rule, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/sealed/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>An alert, by the SHA-256 of its RFC 8785 canonical form, was sealed in an entry of Aertun&#x27;s audit log, the log verifies from its first entry, and a Bitcoin timestamp attests a head of the log that covers that entry: the alert existed no later than the block that holds it.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when the log stops verifying or was rewritten, or the batch kept for the seal does not reach the root its entry committed; <strong>proven</strong> when the alert is in a sealed batch, the batch is in the log, and a head covering it is anchored in a Bitcoin block whose header was checked; <strong>inconclusive</strong> until then. The alert itself is never in the proof.</p>
+<pre><code>aertun alert seal alerts.jsonl
+aertun auditlog anchor
+aertun proof sealed --alert alert.json --key signing.key --out sealed.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>sealed</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.sealed</code></h2>
+<p>SealedEvidence is what a sealed-alert proof rests on.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>digest</code></td><td><code>string</code></td><td>Digest is the alert&#x27;s identity: the SHA-256, in hex, of its JSON in the canonical form of RFC 8785, and the subject&#x27;s digest. The alert itself is not carried.</td></tr>
+<tr><td><code>log_entries</code></td><td><code>int</code></td><td>LogEntries is how many entries the audit log held when it was read, counting one that could not be read.</td></tr>
+<tr><td><code>log_break</code></td><td><code>int</code></td><td>LogBreak is the first entry, counting from one, that did not re-hash, did not link to the one before it, was out of sequence or could not be read; zero when every entry verified.</td></tr>
+<tr><td><code>rewritten</code></td><td><code>int</code></td><td>Rewritten is the size of a head the log sent to be anchored that its first entries no longer hash to — the log rewritten after the head left the machine; zero when every such head still matches.</td></tr>
+<tr><td><code>batches</code></td><td><code>int</code></td><td>Batches is how many batches the log records sealing: the batches the digest was looked for in.</td></tr>
+<tr><td><code>unkept</code></td><td><code>int</code></td><td>Unkept is how many of those batches have no readable record of their digests here, so the digest could not be looked for in them.</td></tr>
+<tr><td><code>entry</code></td><td><code>int</code></td><td>Entry is the audit entry that committed the earliest batch holding the digest; zero when none did.</td></tr>
+<tr><td><code>sealed</code></td><td><code>string</code></td><td>Sealed is when that entry was written, as the log recorded it, RFC 3339 to the nanosecond: the log&#x27;s own clock, which an anchor bounds.</td></tr>
+<tr><td><code>batch_root</code></td><td><code>string</code></td><td>BatchRoot is the RFC 6962 Merkle root over the batch&#x27;s digests, as the entry committed it.</td></tr>
+<tr><td><code>batch_size</code></td><td><code>int</code></td><td>BatchSize is how many digests the entry says the batch holds.</td></tr>
+<tr><td><code>batch_index</code></td><td><code>int</code></td><td>BatchIndex is the digest&#x27;s place in the batch, counting from zero.</td></tr>
+<tr><td><code>batch_path</code></td><td><code>[]string</code></td><td>BatchPath is the RFC 6962 audit path from the digest&#x27;s leaf to the batch root, nearest the leaf first.</td></tr>
+<tr><td><code>entry_leaf</code></td><td><code>string</code></td><td>EntryLeaf is the entry&#x27;s leaf in the audit log&#x27;s Merkle tree, which internal/audit derives from the entry&#x27;s content and its chain hashes.</td></tr>
+<tr><td><code>head_size</code></td><td><code>int</code></td><td>HeadSize is how many entries the head the entry is shown in covers: the anchored head when one covers the entry, otherwise the log as read.</td></tr>
+<tr><td><code>head_root</code></td><td><code>string</code></td><td>HeadRoot is that head&#x27;s Merkle root: for an anchored head, the value the timestamp commits to.</td></tr>
+<tr><td><code>head_path</code></td><td><code>[]string</code></td><td>HeadPath is the RFC 6962 audit path from the entry&#x27;s leaf, at index Entry-1, to the head&#x27;s root, nearest the leaf first.</td></tr>
+<tr><td><code>anchor</code></td><td><code>string</code></td><td>Anchor is what fixes that head in time: bitcoin for an attestation whose block was checked, unconfirmed for one whose block was not, pending for a head a calendar holds and has not yet put in a block, none when no head sent to be anchored covers the entry.</td></tr>
+<tr><td><code>height</code></td><td><code>int</code></td><td>Height is the Bitcoin block the attestation names, when Anchor is bitcoin or unconfirmed.</td></tr>
+<tr><td><code>block_hash</code></td><td><code>string</code></td><td>BlockHash is that block&#x27;s hash, when Anchor is bitcoin: what a reader looks up at that height, in any node or explorer, to see the block is in the chain.</td></tr>
+<tr><td><code>mined</code></td><td><code>string</code></td><td>Mined is the time the block&#x27;s header carries, RFC 3339, when Anchor is bitcoin. Bitcoin lets a block&#x27;s own time run up to two hours off.</td></tr>
+<tr><td><code>header</code></td><td><code>string</code></td><td>Header is the block&#x27;s header, eighty bytes in hex, when Anchor is bitcoin. Its hash is BlockHash and its time is Mined; the work it shows is checked again whenever the proof is; and its merkle root is the value the OpenTimestamps proof reaches from HeadRoot, which the command checked before signing.</td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

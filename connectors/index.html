@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://aertun.github.io/connectors/">
 <meta property="og:image" content="https://aertun.github.io/assets/social.png">
 <meta property="og:locale" content="en_GB">
-<meta property="article:modified_time" content="2026-10-23">
+<meta property="article:modified_time" content="2026-11-18">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Aertun connectors: Okta, Entra ID, GitHub and log sources">
 <meta name="twitter:description" content="Read Okta, Entra ID, GitHub, KnowBe4, Vanta and more through their APIs, map logs from 17 platforms to one shape, and receive SSF, CAEP and webhook feeds.">
@@ -28,7 +28,7 @@
 <link rel="sitemap" type="application/xml" href="/sitemap.xml">
 <script>try{var t=localStorage.getItem("vg-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}document.documentElement.classList.add("js")</script>
 <script src="/assets/docs.js" defer></script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://aertun.github.io/#project","@type":"Organization","logo":"https://aertun.github.io/assets/mark.png","name":"The aertun project","sameAs":["https://github.com/aertun/aertun"],"url":"https://github.com/aertun"},{"@type":"TechArticle","about":{"@type":"SoftwareApplication","name":"aertun"},"author":{"@id":"https://aertun.github.io/#project"},"dateModified":"2026-10-23","description":"Read Okta, Entra ID, GitHub, KnowBe4, Vanta and more through their APIs, map logs from 17 platforms to one shape, and receive SSF, CAEP and webhook feeds.","headline":"Connectors, log sources and feeds","image":"https://aertun.github.io/assets/social.png","inLanguage":"en","isPartOf":{"@type":"WebSite","name":"aertun manual","url":"https://aertun.github.io/"},"mainEntityOfPage":"https://aertun.github.io/connectors/","publisher":{"@id":"https://aertun.github.io/#project"},"url":"https://aertun.github.io/connectors/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://aertun.github.io/","name":"aertun manual","position":1},{"@type":"ListItem","item":"https://aertun.github.io/#detection","name":"Detection","position":2},{"@type":"ListItem","name":"Connectors and feeds","position":3}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://aertun.github.io/#project","@type":"Organization","logo":"https://aertun.github.io/assets/mark.png","name":"The aertun project","sameAs":["https://github.com/aertun/aertun"],"url":"https://github.com/aertun"},{"@type":"TechArticle","about":{"@type":"SoftwareApplication","name":"aertun"},"author":{"@id":"https://aertun.github.io/#project"},"dateModified":"2026-11-18","description":"Read Okta, Entra ID, GitHub, KnowBe4, Vanta and more through their APIs, map logs from 17 platforms to one shape, and receive SSF, CAEP and webhook feeds.","headline":"Connectors, log sources and feeds","image":"https://aertun.github.io/assets/social.png","inLanguage":"en","isPartOf":{"@type":"WebSite","name":"aertun manual","url":"https://aertun.github.io/"},"mainEntityOfPage":"https://aertun.github.io/connectors/","publisher":{"@id":"https://aertun.github.io/#project"},"url":"https://aertun.github.io/connectors/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://aertun.github.io/","name":"aertun manual","position":1},{"@type":"ListItem","item":"https://aertun.github.io/#detection","name":"Detection","position":2},{"@type":"ListItem","name":"Connectors and feeds","position":3}]}]}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to the content</a>
@@ -142,16 +142,26 @@ aertun connect run okta --save</code></pre>
 <pre><code>aertun collect run
 aertun collect file aws/cloudtrail trail.json
 aertun collect auto 15m</code></pre>
-<p>Logs are mapped to one shape from AWS CloudTrail, Microsoft Entra ID, Microsoft Azure, Google Workspace, Google Cloud, Okta, Duo, CrowdStrike Falcon, Jamf Pro, GitHub, Kubernetes, Cloudflare, Salesforce, Slack, Snowflake, Linux auditd and EVM chains. <code>aertun source add</code> adds a mapping of your own, checked against a sample, and <code>aertun telemetry check</code> says whether what it produces can be used at all.</p>
+<p>Logs are mapped to one shape from AWS CloudTrail, Microsoft Entra ID, Microsoft Azure, Google Workspace, Google Cloud, Okta, Duo, CrowdStrike Falcon, Jamf Pro, GitHub, Kubernetes, Cloudflare, Salesforce, Slack, Snowflake, Wazuh, Linux auditd, EVM chains, the OpenAI and Anthropic audit logs, LiteLLM, and GenAI agent telemetry over OTLP. <code>aertun source add</code> adds a mapping of your own, checked against a sample, and <code>aertun telemetry check</code> says whether what it produces can be used at all.</p>
 <h2 id="feeds">Feeds pushed to Aertun<a class="anchor" href="#feeds" aria-hidden="true" tabindex="-1">#</a></h2>
-<pre><code>aertun inbound add ssf corp-idp
+<pre><code>aertun inbound add ssf corp-idp --issuer https://acme.okta.com --url https://aertun.example.com --alias okta
 aertun inbound add okta okta-hooks
-aertun inbound add webhook ci
+aertun inbound add webhook github --mapping github/audit --github
+aertun inbound add webhook billing --mapping billing/admin
+aertun inbound add webhook litellm --mapping litellm/requests --bearer
+aertun inbound add webhook wazuh --mapping wazuh/alerts --seal
+aertun inbound add stream site-b --keys site-b.keys.json
 aertun inbound status NAME</code></pre>
-<p>A feed's endpoint is <code>/feeds/NAME</code> on the console. Shared Signals (SSF, CAEP, RISC) are verified against the transmitter's keys; webhooks against their secret. What arrives is stored like anything collected, and put to the automations as a signal.</p>
+<p>A feed's endpoint is <code>/feeds/NAME</code> on the console. Shared Signals (SSF, CAEP, RISC) are verified against the transmitter's keys; a webhook against its signing secret, as Standard Webhooks or GitHub sign; a sender that can set a header and cannot sign, with <code>--bearer</code>, against a static secret in <code>Authorization</code>, which proves who sent a delivery and not that its body is the one sent, so give its address only over https. Every webhook's records go through a mapping (<code>--mapping ISSUER/STREAM</code>, from <code>aertun source list</code>). With <code>--seal</code>, each record's digest is also committed to the audit log within 30 seconds of arrival, in one entry for each batch, so <a href="/proofs/#sealed"><code>proof sealed</code></a> can later show it existed by then. A <code>stream</code> feed takes another deployment's signed audit log (<a href="/proofs/#peer-log">peer log</a>). What arrives is stored like anything collected, and put to the automations as a signal.</p>
+<h2 id="litellm">LiteLLM<a class="anchor" href="#litellm" aria-hidden="true" tabindex="-1">#</a></h2>
+<pre><code>aertun inbound add webhook litellm --mapping litellm/requests --bearer</code></pre>
+<p>A LiteLLM proxy is the gateway most agents call models through, and it knows whose key each call came on. Point its <code>generic_api</code> logging callback at the feed's URL with the <code>Authorization</code> header the command prints; each call arrives as a <code>litellm/requests</code> event whose actor is the virtual key, by its hash, with its alias and team beside it. What was asked and answered is never read. Its OpenTelemetry traces can go to Aertun's OTLP endpoint as well (<code>/v1/traces</code>, protobuf or JSON). An agent's own account can then be held against the gateway's record: <code>aertun agent reconcile NAME --gateway litellm/requests:KEY</code>.</p>
+<h2 id="wazuh">Wazuh<a class="anchor" href="#wazuh" aria-hidden="true" tabindex="-1">#</a></h2>
+<pre><code>aertun inbound add webhook wazuh --mapping wazuh/alerts --seal</code></pre>
+<p>Wazuh's alerts arrive through <code>custom-aertun.py</code>, which the manager's integrator runs for each alert and which signs it as a Standard Webhooks delivery. Each is stored as a <code>wazuh/alerts</code> detection and sealed. In the other direction, a Wazuh agent tails Aertun's audit log and <code>aertun_rules.xml</code> raises alerts on the kill switch, refuted proofs, forked peer logs, refusals, privilege and legal holds. The script, the rules, their tests and the steps are in the repository's <a href="https://github.com/aertun/aertun/tree/main/integrations/wazuh"><code>integrations/wazuh</code></a>, tested against a Wazuh 4.14.10 manager. <a href="/proofs/#mdr"><code>aertun mdr</code></a> can then test the Wazuh deployment itself, blind.</p>
   </div>
   <footer class="guide-foot">
-    <p class="updated">Updated 2026-10-23 · <a href="https://github.com/aertun/aertun.github.io/blob/main/src/pages/connectors.html">Edit this page on GitHub</a></p>
+    <p class="updated">Updated 2026-11-18 · <a href="https://github.com/aertun/aertun.github.io/blob/main/src/pages/connectors.html">Edit this page on GitHub</a></p>
     <nav class="pager" aria-label="Previous and next guides">
       <a class="pager-prev" href="/automations/" rel="prev"><span class="pager-dir"><svg class="icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false"><path d="m313-440 196 196q12 12 11.5 28T508-188q-12 11-28 11.5T452-188L188-452q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l264-264q11-11 27.5-11t28.5 11q12 12 12 28.5T508-715L313-520h447q17 0 28.5 11.5T800-480q0 17-11.5 28.5T760-440H313Z"/></svg>Previous</span><span class="pager-title">Automations</span></a>
       <a class="pager-next" href="/vulnerabilities/" rel="next"><span class="pager-dir">Next<svg class="icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false"><path d="M647-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h447L451-716q-12-12-11.5-28t12.5-28q12-11 28-11.5t28 11.5l264 264q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L508-188q-11 11-27.5 11T452-188q-12-12-12-28.5t12-28.5l195-195Z"/></svg></span><span class="pager-title">Vulnerability management</span></a>
@@ -165,6 +175,8 @@ aertun inbound status NAME</code></pre>
     <li><a href="#connectors">Connectors</a></li>
     <li><a href="#collection">Collection</a></li>
     <li><a href="#feeds">Feeds pushed to Aertun</a></li>
+    <li><a href="#litellm">LiteLLM</a></li>
+    <li><a href="#wazuh">Wazuh</a></li>
   </ul>
 </aside>
 </div>

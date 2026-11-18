@@ -1,0 +1,59 @@
+<!--
+title: Proof format: a vulnerability report (v1)
+short: referee/v1
+seo: Aertun proof format: referee/v1
+description: The predicate https://aertun.github.io/proof/referee/v1: what a proof about a vulnerability report claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/referee/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>A vulnerability report, usually a model&#x27;s, cites places that exist in the source at the commit it names, names the version that source declares and one inside the range it gives, gives a CVSS score its vector recomputes to and the severity of that score, and is the first report of its flaw here.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when a cited file or function is not there, the version or range is wrong, the score or severity is not what the vector gives, or an earlier report of the same flaw was committed or refereed here; <strong>proven</strong> when every claim was checked and held; <strong>inconclusive</strong> when one could not be checked. A proof of concept is never run; paths and names the report chose are carried only as digests.</p>
+<pre><code>aertun vuln commit report.json
+aertun vuln referee report.json --source ./checkout --key signing.key --out referee.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>referee</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.referee</code></h2>
+<p>RefereeEvidence is what a referee proof rests on.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>package</code></td><td><code>string</code></td><td>Package is the release the report is about, by package URL, and Commit the commit it was written against.</td></tr>
+<tr><td><code>commit</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>head</code></td><td><code>string</code></td><td>Head is the commit the source read was at, when it was a checkout.</td></tr>
+<tr><td><code>declared</code></td><td><code>string</code></td><td>Declared is the version the source says it is, when it says.</td></tr>
+<tr><td><code>introduced</code></td><td><code>string</code></td><td>Introduced and Fixed are the range the report gives, and Range where the release falls against it.</td></tr>
+<tr><td><code>fixed</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>range</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>locations</code></td><td><code>[]RefereeLocation</code></td><td>Locations are the places cited, in the report&#x27;s order.</td></tr>
+<tr><td><code>cwe</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>vector</code></td><td><code>string</code></td><td>Vector is the CVSS vector, when it is a CVSS 3 base vector; Score and Severity are what the report gives.</td></tr>
+<tr><td><code>score</code></td><td><code>float64</code></td><td></td></tr>
+<tr><td><code>severity</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>poc_sha256</code></td><td><code>string</code></td><td>PoC is the digest of the proof of concept, which was not run.</td></tr>
+<tr><td><code>fingerprint</code></td><td><code>string</code></td><td>Fingerprint is what two reports of one flaw share (internal/referee).</td></tr>
+<tr><td><code>committed</code></td><td><code>*AuditEntry</code></td><td>Committed is the audit entry that committed this report, when one did.</td></tr>
+<tr><td><code>duplicates</code></td><td><code>[]RefereeEarlier</code></td><td>Duplicates are earlier reports of the same flaw, up to MaxFailures.</td></tr>
+<tr><td><code>reach</code></td><td><code>string</code></td><td>Reach is what an asset&#x27;s own code was found to do with the symbol, when an asset was named (internal/reach).</td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

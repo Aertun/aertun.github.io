@@ -1,0 +1,63 @@
+<!--
+title: Proof format: a detection provider tested blind (v1)
+short: mdr/v1
+seo: Aertun proof format: mdr/v1
+description: The predicate https://aertun.github.io/proof/mdr/v1: what a proof about a detection provider tested blind claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/mdr/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>A managed detection provider, or an AI SOC, notified within its service level on all but a declared share of emulations run on the estate at random times, from a plan whose digest the audit log committed before any emulation ran.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when the exact lower bound on the share missed or late is over the tolerance; <strong>proven</strong> when the upper bound is at or under it once the plan&rsquo;s window has closed; <strong>inconclusive</strong> otherwise. Runs and notifications are recorded by verified people, or notifications joined from the provider&rsquo;s alerts in the event store.</p>
+<pre><code>aertun mdr plan q4 --provider acme-mdr --emulations emulations.txt --count 20 --over 30d
+aertun mdr prove q4 --sla 30m --tolerance 0.1 --key signing.key --out mdr.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>mdr</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.mdr</code></h2>
+<p>MDREvidence is what an MDR proof rests on.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>plan</code></td><td><code>string</code></td><td>Plan is the plan&#x27;s name, as the operator gave it.</td></tr>
+<tr><td><code>provider</code></td><td><code>string</code></td><td>Provider is the provider under test, by a short name the operator chose: never the provider&#x27;s own wording.</td></tr>
+<tr><td><code>plan_sha256</code></td><td><code>string</code></td><td>PlanSHA256 is the digest of the plan as it was committed, which is also the subject&#x27;s digest.</td></tr>
+<tr><td><code>committed</code></td><td><code>AuditEntry</code></td><td>Committed is the audit entry that committed the plan&#x27;s digest, before any item was run.</td></tr>
+<tr><td><code>window_start</code></td><td><code>string</code></td><td>WindowStart and WindowEnd bound the times the items were drawn at, RFC 3339; the end is not included.</td></tr>
+<tr><td><code>window_end</code></td><td><code>string</code></td><td></td></tr>
+<tr><td><code>run_within_seconds</code></td><td><code>int</code></td><td>RunWithin is how long after its scheduled time an item could still be run and counted.</td></tr>
+<tr><td><code>sla_seconds</code></td><td><code>int</code></td><td>SLA is the time to notify the provider is held to, in seconds.</td></tr>
+<tr><td><code>closed</code></td><td><code>bool</code></td><td>Closed is whether the test had closed when the proof was made: the window&#x27;s end, the time to run its last item, and the SLA after that, all passed.</td></tr>
+<tr><td><code>tolerance</code></td><td><code>float64</code></td><td>Tolerance is the missed share the provider is held to, declared when the proof was made.</td></tr>
+<tr><td><code>planned</code></td><td><code>int</code></td><td>Planned is how many items the plan holds.</td></tr>
+<tr><td><code>run</code></td><td><code>int</code></td><td>Run is how many of them were recorded as run.</td></tr>
+<tr><td><code>first_run</code></td><td><code>string</code></td><td>FirstRun is when the first of them was run, RFC 3339 as recorded; empty when none was.</td></tr>
+<tr><td><code>within_sla</code></td><td><code>int</code></td><td>Within is how many runs the provider notified within the SLA.</td></tr>
+<tr><td><code>late</code></td><td><code>int</code></td><td>Late is how many it notified after the SLA.</td></tr>
+<tr><td><code>not_notified</code></td><td><code>int</code></td><td>Never is how many it did not notify at all.</td></tr>
+<tr><td><code>missed</code></td><td><code>Bound</code> — k of n with exact one-sided bounds at 95% each: <code>{"k","n","lower","upper"}</code></td><td>Missed is the late and the never, of the runs, with the exact one-sided bounds on the share.</td></tr>
+<tr><td><code>median_seconds</code></td><td><code>int</code></td><td>Median is the time to notify, in seconds, of the runs notified late or in time: the nearest-rank 50th percentile, zero when none was.</td></tr>
+<tr><td><code>p90_seconds</code></td><td><code>int</code></td><td>P90 is the nearest-rank 90th percentile of the same, zero when none was.</td></tr>
+<tr><td><code>items</code></td><td><code>[]MDRItem</code></td><td>Items are the runs, by item number, and how the provider answered each: what every count above is recounted from.</td></tr>
+<tr><td><code>min_run</code></td><td><code>int</code></td><td>MinRun is the fewest runs a proven verdict may rest on.</td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

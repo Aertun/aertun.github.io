@@ -1,0 +1,50 @@
+<!--
+title: Proof format: a protocol's on-chain posture (v1)
+short: chain-posture/v1
+seo: Aertun proof format: chain-posture/v1
+description: The predicate https://aertun.github.io/proof/chain-posture/v1: what a proof about a protocol's on-chain posture claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/chain-posture/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>Each setting a posture file declares — a Safe multisig&#x27;s threshold and owners, a timelock&#x27;s delay, a proxy&#x27;s admin and implementation — is at least what it declares, read from the chain at one block named by its hash.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when a setting is weaker than declared, each named by contract, setting, declared and found; <strong>proven</strong> when every setting was read and holds; <strong>inconclusive</strong> when one could not be read, saying why. The endpoint&rsquo;s address is never written into the proof.</p>
+<pre><code>aertun chain posture protocol.posture.json --rpc https://rpc.example --key signing.key --out posture.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>chain_posture</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.chain_posture</code></h2>
+<p>ChainPostureEvidence is what a chain-posture proof rests on.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>name</code></td><td><code>string</code></td><td>Name is the protocol&#x27;s name as the posture file gives it: lower-case letters, digits, &#x27;.&#x27;, &#x27;_&#x27; and &#x27;-&#x27;, at most 64.</td></tr>
+<tr><td><code>chain_id</code></td><td><code>int64</code></td><td>ChainID is the chain the posture file declares, and the one the endpoint said it serves.</td></tr>
+<tr><td><code>block</code></td><td><code>int64</code></td><td>Block is the number of the block every setting was read at.</td></tr>
+<tr><td><code>block_hash</code></td><td><code>string</code></td><td>BlockHash is that block&#x27;s hash. Every read named the block by it (EIP-1898), so every setting was read from the same state.</td></tr>
+<tr><td><code>finalized</code></td><td><code>bool</code></td><td>Finalized says the block was the endpoint&#x27;s latest finalized one, read at because the operator named no block.</td></tr>
+<tr><td><code>settings</code></td><td><code>[]PostureSetting</code></td><td>Settings are every setting the posture file declares, in its order, with what was read for each.</td></tr>
+<tr><td><code>held</code></td><td><code>int</code></td><td>Held is how many settings were read and hold.</td></tr>
+<tr><td><code>regressed</code></td><td><code>int</code></td><td>Regressed is how many settings were read and do not hold.</td></tr>
+<tr><td><code>unread</code></td><td><code>int</code></td><td>Unread is how many settings could not be read.</td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>
