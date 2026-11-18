@@ -3,7 +3,7 @@
   <url><loc>https://aertun.github.io/start/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://aertun.github.io/install/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/concepts/</loc><lastmod>2026-10-23</lastmod></url>
-  <url><loc>https://aertun.github.io/proofs/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://aertun.github.io/proofs/</loc><lastmod>2026-11-18</lastmod></url>
   <url><loc>https://aertun.github.io/agents/</loc><lastmod>2026-11-16</lastmod></url>
   <url><loc>https://aertun.github.io/windtunnel/</loc><lastmod>2026-11-06</lastmod></url>
   <url><loc>https://aertun.github.io/approvals/</loc><lastmod>2026-11-15</lastmod></url>
@@ -13,7 +13,7 @@
   <url><loc>https://aertun.github.io/intelligence/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://aertun.github.io/detections/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://aertun.github.io/automations/</loc><lastmod>2026-10-23</lastmod></url>
-  <url><loc>https://aertun.github.io/connectors/</loc><lastmod>2026-10-23</lastmod></url>
+  <url><loc>https://aertun.github.io/connectors/</loc><lastmod>2026-11-18</lastmod></url>
   <url><loc>https://aertun.github.io/vulnerabilities/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://aertun.github.io/workforce/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://aertun.github.io/people/</loc><lastmod>2026-10-23</lastmod></url>
@@ -30,13 +30,21 @@
   <url><loc>https://aertun.github.io/proof/adjudication/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/breach-scope/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/calibration/v1/</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://aertun.github.io/proof/chain-posture/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/claim/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/clock/v1/</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://aertun.github.io/proof/continuity/v1/</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://aertun.github.io/proof/coverage/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/detection/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/evidence/v1/</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://aertun.github.io/proof/mdr/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/not-affected/v1/</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://aertun.github.io/proof/peer-log/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/reconciliation/v1/</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://aertun.github.io/proof/referee/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/revocation/v1/</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://aertun.github.io/proof/sealed/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/triage/v1/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://aertun.github.io/proof/verdicts/v1/</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://aertun.github.io/proof/vex-record/v1/</loc><lastmod>2026-11-15</lastmod></url>
 </urlset>

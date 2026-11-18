@@ -1,0 +1,54 @@
+<!--
+title: Proof format: detection coverage (v1)
+short: coverage/v1
+seo: Aertun proof format: coverage/v1
+description: The in-toto predicate https://aertun.github.io/proof/coverage/v1: what a proof about detection coverage claims, its fields, its verdict rule, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/coverage/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>For each ATT&amp;CK, ATLAS or OWASP technique the rules claim, every corpus entry labelled as an instance of it — by what produced it, such as an Atomic Red Team test — is caught by a rule claiming it that raises an alert, no such rule fires on an entry labelled benign, and, with telemetry, every instance caught is still caught with only the fields its source has sent lately.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when an instance is caught by no rule claiming its technique, or a claiming rule fires on a benign entry; <strong>proven</strong> when every technique has its instances caught on at least the evidence asked for; <strong>inconclusive</strong> when an instance is seen only by a rule that raises nothing on its own, the evidence is thin, or an instance would no longer be caught with the fields its source sends now. A sub-technique is an instance of its parent. There is no percentage; <code>--navigator</code> draws an ATT&amp;CK Navigator layer of it.</p>
+<pre><code>aertun proof coverage --corpus corpus.jsonl --technique T1556 --telemetry 7d --key signing.key --navigator layer.json --out coverage.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>coverage</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.coverage</code></h2>
+<p>CoverageEvidence is what a coverage proof rests on.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>rules</code></td><td><code>[]CoverageRuleFile</code></td><td>Rules are every rule read, by id; the subject&#x27;s digest is over them.</td></tr>
+<tr><td><code>entries</code></td><td><code>int</code></td><td>Entries is the corpus&#x27;s size; Labelled how many are labelled with a technique, and Benign how many as nothing happening.</td></tr>
+<tr><td><code>labelled</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>benign</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>min_positives</code></td><td><code>int</code></td><td>MinPositives and MinBenign are what a technique needs to be proven.</td></tr>
+<tr><td><code>min_benign</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>asked</code></td><td><code>bool</code></td><td>Asked is set when the techniques were named rather than every one the rules claim.</td></tr>
+<tr><td><code>unrecognised</code></td><td><code>int</code></td><td>Unrecognised is how many distinct tags the rules carry that are not a technique id of a known shape, and so are in no row.</td></tr>
+<tr><td><code>telemetry</code></td><td><code>*CoverageWindow</code></td><td></td></tr>
+<tr><td><code>techniques</code></td><td><code>[]TechniqueCoverage</code></td><td></td></tr>
+<tr><td><code>unclaimed</code></td><td><code>[]UnclaimedTechnique</code></td><td></td></tr>
+<tr><td><code>dark_count</code></td><td><code>int</code></td><td>DarkCount is how many rules are dark, and Dark lists them, up to MaxFailures.</td></tr>
+<tr><td><code>dark</code></td><td><code>[]DarkRule</code></td><td></td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

@@ -1,0 +1,57 @@
+<!--
+title: Proof format: another site's audit log (v1)
+short: peer-log/v1
+seo: Aertun proof format: peer-log/v1
+description: The predicate https://aertun.github.io/proof/peer-log/v1: what a proof about another site's audit log claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/peer-log/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>Every record of a peer deployment&#x27;s audit log up to a time is held here in order, each tree head the peer signed as it sent them is the Merkle root of the records held, and the peer has signed no other history.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when a signed head is not the records held, or the peer sent a head of another history signed with its own keys, which the proof carries; <strong>proven</strong> when every head agrees, there is no fork, and the last batch arrived after the time and short of a full batch; <strong>inconclusive</strong> otherwise.</p>
+<pre><code>aertun inbound prove site-b --key signing.key --at 2026-11-18T00:00:00Z --out site-b.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>peer_log</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.peer_log</code></h2>
+<p>PeerLogEvidence is what a peer-log proof rests on.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>peer</code></td><td><code>string</code></td><td>Peer is the feed the peer&#x27;s log arrives on, by the name it has here.</td></tr>
+<tr><td><code>keys</code></td><td><code>PeerKeys</code></td><td>Keys are the keys the peer signs its tree heads with.</td></tr>
+<tr><td><code>at</code></td><td><code>string</code></td><td>At is the time the log is claimed complete up to, RFC 3339.</td></tr>
+<tr><td><code>held</code></td><td><code>int</code></td><td>Held is how many of the peer&#x27;s records are held, in order from its first.</td></tr>
+<tr><td><code>root</code></td><td><code>string</code></td><td>Root is the Merkle root this deployment computes over them; empty when none is held.</td></tr>
+<tr><td><code>heads</code></td><td><code>int</code></td><td>Heads is how many tree heads the peer signed were kept, one with each batch taken.</td></tr>
+<tr><td><code>agreeing</code></td><td><code>int</code></td><td>Agreeing is how many of them still verify with Keys and are the Merkle root of the first so-many records held.</td></tr>
+<tr><td><code>disagree</code></td><td><code>int</code></td><td>Disagree is how many are not, and Disagreeing lists them, up to MaxFailures.</td></tr>
+<tr><td><code>disagreeing</code></td><td><code>[]PeerHead</code></td><td></td></tr>
+<tr><td><code>last</code></td><td><code>*audit.SignedHead</code></td><td>Last is the last head kept, as the peer signed it.</td></tr>
+<tr><td><code>last_received</code></td><td><code>string</code></td><td>LastReceived is when the batch that carried it was taken, by this deployment&#x27;s clock, and LastRecords how many records that batch held.</td></tr>
+<tr><td><code>last_records</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>full_batch</code></td><td><code>int</code></td><td>FullBatch is the most records a batch carries: a last batch smaller than this reached the end of the peer&#x27;s log.</td></tr>
+<tr><td><code>fork_count</code></td><td><code>int</code></td><td>ForkCount is how many heads the peer signed and sent that are not the log held, and Forks carries them, up to MaxPeerForks.</td></tr>
+<tr><td><code>forks</code></td><td><code>[]PeerFork</code></td><td></td></tr>
+<tr><td><code>forks_recorded</code></td><td><code>int</code></td><td>ForksRecorded is how many forks from this feed this deployment&#x27;s own audit log recorded as they arrived. More recorded than kept means evidence of one was removed from the feed&#x27;s files afterwards.</td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>

@@ -6,7 +6,7 @@ description: Read Okta, Entra ID, GitHub, KnowBe4, Vanta and more through their 
 lead: Read other tools through their APIs, map their logs, and take what they push.
 icon: feeds
 screens: Feeds
-updated: 2026-10-23
+updated: 2026-11-18
 -->
 <h2 id="connectors">Connectors</h2>
 <p>A connector reads one tool through its API, over only the endpoints its manifest declares, with a credential sealed under Aertun's keyring. With no keyring, no credential can be stored.</p>
@@ -22,10 +22,20 @@ aertun connect run okta --save</code></pre>
 <pre><code>aertun collect run
 aertun collect file aws/cloudtrail trail.json
 aertun collect auto 15m</code></pre>
-<p>Logs are mapped to one shape from AWS CloudTrail, Microsoft Entra ID, Microsoft Azure, Google Workspace, Google Cloud, Okta, Duo, CrowdStrike Falcon, Jamf Pro, GitHub, Kubernetes, Cloudflare, Salesforce, Slack, Snowflake, Linux auditd and EVM chains. <code>aertun source add</code> adds a mapping of your own, checked against a sample, and <code>aertun telemetry check</code> says whether what it produces can be used at all.</p>
+<p>Logs are mapped to one shape from AWS CloudTrail, Microsoft Entra ID, Microsoft Azure, Google Workspace, Google Cloud, Okta, Duo, CrowdStrike Falcon, Jamf Pro, GitHub, Kubernetes, Cloudflare, Salesforce, Slack, Snowflake, Wazuh, Linux auditd, EVM chains, the OpenAI and Anthropic audit logs, LiteLLM, and GenAI agent telemetry over OTLP. <code>aertun source add</code> adds a mapping of your own, checked against a sample, and <code>aertun telemetry check</code> says whether what it produces can be used at all.</p>
 <h2 id="feeds">Feeds pushed to Aertun</h2>
-<pre><code>aertun inbound add ssf corp-idp
+<pre><code>aertun inbound add ssf corp-idp --issuer https://acme.okta.com --url https://aertun.example.com --alias okta
 aertun inbound add okta okta-hooks
-aertun inbound add webhook ci
+aertun inbound add webhook github --mapping github/audit --github
+aertun inbound add webhook billing --mapping billing/admin
+aertun inbound add webhook litellm --mapping litellm/requests --bearer
+aertun inbound add webhook wazuh --mapping wazuh/alerts --seal
+aertun inbound add stream site-b --keys site-b.keys.json
 aertun inbound status NAME</code></pre>
-<p>A feed's endpoint is <code>/feeds/NAME</code> on the console. Shared Signals (SSF, CAEP, RISC) are verified against the transmitter's keys; webhooks against their secret. What arrives is stored like anything collected, and put to the automations as a signal.</p>
+<p>A feed's endpoint is <code>/feeds/NAME</code> on the console. Shared Signals (SSF, CAEP, RISC) are verified against the transmitter's keys; a webhook against its signing secret, as Standard Webhooks or GitHub sign; a sender that can set a header and cannot sign, with <code>--bearer</code>, against a static secret in <code>Authorization</code>, which proves who sent a delivery and not that its body is the one sent, so give its address only over https. Every webhook's records go through a mapping (<code>--mapping ISSUER/STREAM</code>, from <code>aertun source list</code>). With <code>--seal</code>, each record's digest is also committed to the audit log within 30 seconds of arrival, in one entry for each batch, so <a href="/proofs/#sealed"><code>proof sealed</code></a> can later show it existed by then. A <code>stream</code> feed takes another deployment's signed audit log (<a href="/proofs/#peer-log">peer log</a>). What arrives is stored like anything collected, and put to the automations as a signal.</p>
+<h2 id="litellm">LiteLLM</h2>
+<pre><code>aertun inbound add webhook litellm --mapping litellm/requests --bearer</code></pre>
+<p>A LiteLLM proxy is the gateway most agents call models through, and it knows whose key each call came on. Point its <code>generic_api</code> logging callback at the feed's URL with the <code>Authorization</code> header the command prints; each call arrives as a <code>litellm/requests</code> event whose actor is the virtual key, by its hash, with its alias and team beside it. What was asked and answered is never read. Its OpenTelemetry traces can go to Aertun's OTLP endpoint as well (<code>/v1/traces</code>, protobuf or JSON). An agent's own account can then be held against the gateway's record: <code>aertun agent reconcile NAME --gateway litellm/requests:KEY</code>.</p>
+<h2 id="wazuh">Wazuh</h2>
+<pre><code>aertun inbound add webhook wazuh --mapping wazuh/alerts --seal</code></pre>
+<p>Wazuh's alerts arrive through <code>custom-aertun.py</code>, which the manager's integrator runs for each alert and which signs it as a Standard Webhooks delivery. Each is stored as a <code>wazuh/alerts</code> detection and sealed. In the other direction, a Wazuh agent tails Aertun's audit log and <code>aertun_rules.xml</code> raises alerts on the kill switch, refuted proofs, forked peer logs, refusals, privilege and legal holds. The script, the rules, their tests and the steps are in the repository's <a href="https://github.com/aertun/aertun/tree/main/integrations/wazuh"><code>integrations/wazuh</code></a>, tested against a Wazuh 4.14.10 manager. <a href="/proofs/#mdr"><code>aertun mdr</code></a> can then test the Wazuh deployment itself, blind.</p>

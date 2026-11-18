@@ -1,0 +1,62 @@
+<!--
+title: Proof format: a VEX issuer's record (v1)
+short: vex-record/v1
+seo: Aertun proof format: vex-record/v1
+description: The predicate https://aertun.github.io/proof/vex-record/v1: what a proof about a VEX issuer's record claims, its fields, and how to verify it.
+lead: The predicate type https://aertun.github.io/proof/vex-record/v1, as a proof carries it.
+icon: fact_check
+updated: 2026-11-15
+-->
+<p>A proof of this kind is an <a href="https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md">in-toto Statement v1</a> in a <a href="https://github.com/secure-systems-lab/dsse">DSSE envelope</a> whose <code>predicateType</code> is this page's address. Every kind is described on <a href="/proofs/">Proofs</a>.</p>
+<h2 id="claim">What it claims</h2>
+<p>Over a period, the not_affected statements one party issued were contradicted by the evidence at most a declared share of the time, counted over the not-affected proofs kept here about that party and signed by a key this store trusts.</p>
+<h2 id="verdict">Its verdict</h2>
+<p><strong>refuted</strong> when the exact lower bound on the contradicted share is over the tolerance, naming the contradicting proofs by id; <strong>proven</strong> when the upper bound is at or under it on at least 30 checked statements; <strong>inconclusive</strong> otherwise. Statements that could not be checked are counted and never in the rate, and a proof signed by a key nobody trusted is left out and counted.</p>
+<pre><code>aertun vuln vex-record --source NAME --since 2026-10-01 --tolerance 0.05 --key signing.key --out record.proof.json</code></pre>
+<h2 id="shared">What every proof carries</h2>
+<table>
+<thead><tr><th>Field</th><th>Holds</th></tr></thead>
+<tbody>
+<tr><td><code>verdict</code></td><td><code>proven</code>, <code>refuted</code> or <code>inconclusive</code></td></tr>
+<tr><td><code>claim</code></td><td>the sentence that was checked, in words</td></tr>
+<tr><td><code>author</code></td><td>who made the work under test, where that is known: <code>{"by","model","prompt_sha256"}</code> — a digest of the prompt, never the prompt</td></tr>
+<tr><td><code>verifier</code></td><td>what checked it: <code>{"id","version","program"}</code></td></tr>
+<tr><td><code>materials</code></td><td>every input the verifier read besides the subject, each as <code>{"name","digest","entries"}</code></td></tr>
+<tr><td><code>checks</code></td><td>each check as <code>{"name","passed","detail","failures"}</code>: what it found, and each failure named</td></tr>
+<tr><td><code>vex_record</code></td><td>the evidence below, which is set only on this kind</td></tr>
+<tr><td><code>verified_at</code></td><td>when the verifier ran, UTC, RFC 3339</td></tr>
+</tbody>
+</table>
+<h2 id="evidence">The evidence: <code>predicate.vex_record</code></h2>
+<p>VEXRecordEvidence is what a VEX record rests on: the proofs it read, the statements they came to, and the contradicted share with its bounds.</p>
+<table>
+<thead><tr><th>Field</th><th>Type</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>source</code></td><td><code>string</code></td><td>Source is the operator&#x27;s short name for the issuer, as the not-affected proofs read name it.</td></tr>
+<tr><td><code>since</code></td><td><code>string</code></td><td>Since is the start of the period the proofs were made in, by the time each says its verifier ran, RFC 3339 in UTC.</td></tr>
+<tr><td><code>until</code></td><td><code>string</code></td><td>Until is the end of the period, not included.</td></tr>
+<tr><td><code>tolerance</code></td><td><code>float64</code></td><td>Tolerance is the contradicted share the issuer is held to, declared before the record was made.</td></tr>
+<tr><td><code>read</code></td><td><code>int</code></td><td>Read is every kept proof the record read: the not-affected proofs about the issuer made in the period, and every kept proof that no longer verifies. It is LeftOut, UntrustedLeftOut, Superseded and Used together.</td></tr>
+<tr><td><code>left_out</code></td><td><code>int</code></td><td>LeftOut is the kept proofs that no longer verify, counted and never used. Every one in the store is counted, because what a proof that does not verify says it is about cannot be believed.</td></tr>
+<tr><td><code>untrusted_left_out</code></td><td><code>int</code></td><td>UntrustedLeftOut is the proofs left out because a key this store does not trust signed them, counted and never used; zero when they were asked for.</td></tr>
+<tr><td><code>include_untrusted</code></td><td><code>bool</code></td><td>IncludeUntrusted says proofs signed by keys this store does not trust were asked for and used.</td></tr>
+<tr><td><code>superseded</code></td><td><code>int</code></td><td>Superseded is the proofs of a document about an asset that a later proof of the same document about the same asset replaced, so no statement is counted twice.</td></tr>
+<tr><td><code>used</code></td><td><code>int</code></td><td>Used is the proofs the counts below are taken from.</td></tr>
+<tr><td><code>signed_by_trusted</code></td><td><code>int</code></td><td>Trusted is how many of the proofs used were signed by a key this store trusts (internal/proofstore&#x27;s signers).</td></tr>
+<tr><td><code>signed_by_untrusted</code></td><td><code>int</code></td><td>Untrusted is how many of the proofs used were signed by a key this store does not trust: anybody can make a key that signs a proof.</td></tr>
+<tr><td><code>assets</code></td><td><code>int</code></td><td>Assets is how many assets the proofs used held documents against.</td></tr>
+<tr><td><code>statements</code></td><td><code>int</code></td><td>Statements is every statement the documents made, whatever its status.</td></tr>
+<tr><td><code>not_affected</code></td><td><code>int</code></td><td>NotAffected is the not_affected statements among them, each of which was tested.</td></tr>
+<tr><td><code>supported</code></td><td><code>int</code></td><td>Supported is the tested statements the evidence supported, one for each package a statement is about.</td></tr>
+<tr><td><code>contradicted</code></td><td><code>int</code></td><td>Contradicted is the tested statements the evidence contradicted, one for each package a statement is about.</td></tr>
+<tr><td><code>uncheckable</code></td><td><code>int</code></td><td>Uncheckable is the tested statements nothing here could decide, one for each package a statement is about: counted, and never in the rate.</td></tr>
+<tr><td><code>contradicting_proofs</code></td><td><code>int</code></td><td>ContradictingProofs is how many of the proofs used found at least one statement contradicted: the proofs a refutation names.</td></tr>
+<tr><td><code>contradicted_share</code></td><td><code>Bound</code> — k of n with exact one-sided bounds at 95% each: <code>{"k","n","lower","upper"}</code></td><td>Share is the contradicted statements of the checked ones, supported or contradicted, with its exact one-sided bounds: the rate the verdict reads. Uncheckable statements are never in it.</td></tr>
+<tr><td><code>min_checked</code></td><td><code>int</code></td><td>MinChecked is the fewest checked statements a proven verdict may rest on.</td></tr>
+</tbody>
+</table>
+<p class="hint">Generated from the program's own definition of this predicate, so these are the names a proof carries.</p>
+<h2 id="verify">Verifying one</h2>
+<pre><code>aertun proof verify --key proof-key.json PROOF.json                 # both signatures, and the verdict
+python3 scripts/verifyproof/verify.py PROOF.json proof-key.json     # without Aertun</code></pre>
+<p>Both signatures are over DSSE's pre-authentication encoding of the payload: Ed25519 as DSSE defines it, and ML-DSA-65 (FIPS 204) in the context <code>aertun/proof/v1</code>. A signature says which key signed, never whose; whether to trust the key is yours to decide, and <a href="/proofs/#signers">a store's trusted signers</a> say whose it is there. Nothing an author wrote is copied into a proof beyond identifiers and numbers that passed a strict parser.</p>
