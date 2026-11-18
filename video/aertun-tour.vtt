@@ -1,353 +1,441 @@
 WEBVTT
 
 1
-00:00:00.600 --> 00:00:04.071
+00:00:00.600 --> 00:00:03.851
 This is Aertun, the proving ground for AI security work.
 
 2
-00:00:04.351 --> 00:00:09.123
+00:00:04.131 --> 00:00:08.972
 AI now writes detection rules, triages alerts and investigates incidents.
 
 3
-00:00:09.403 --> 00:00:15.626
+00:00:09.252 --> 00:00:15.452
 Aertun checks that work against evidence the AI did not write, and signs the result, whichever way it comes out.
 
 4
-00:00:15.906 --> 00:00:21.096
+00:00:15.732 --> 00:00:20.829
 Everything in this tour was recorded from a real run, in Docker, of the build being released.
 
 5
-00:00:22.596 --> 00:00:25.057
+00:00:22.329 --> 00:00:24.941
 A store starts with one person, its Owner.
 
 6
-00:00:25.337 --> 00:00:29.261
+00:00:25.221 --> 00:00:29.122
 Aertun init prints a one-time link, and opening it adds a passkey.
 
 7
-00:00:29.541 --> 00:00:32.571
+00:00:29.402 --> 00:00:32.246
 There is no default password and no default account.
 
 8
-00:00:32.851 --> 00:00:38.029
+00:00:32.526 --> 00:00:37.971
 Signing in uses the passkey, and the first screen, Today, shows what is waiting for you to decide.
 
 9
-00:00:39.529 --> 00:00:43.047
+00:00:39.471 --> 00:00:43.082
 A proof is only as good as its evidence, so Aertun keeps its own.
 
 10
-00:00:43.327 --> 00:00:48.111
-Events go into an append-only store, and seventy-three detection rules run over them.
+00:00:43.362 --> 00:00:47.878
+Events go into an append-only store, and sixty-three detection rules run over them.
 
 11
-00:00:48.391 --> 00:00:53.859
-Here, a hundred and sixty-one events raise a hundred and fourteen findings, ranked by risk.
+00:00:48.158 --> 00:00:53.197
+Here, a hundred and sixty-one events raise a hundred and two findings, ranked by risk.
 
 12
-00:00:54.139 --> 00:01:00.095
+00:00:53.477 --> 00:00:59.572
 A finding's page marks the text that came from the log, because whoever is being detected may have written it.
 
 13
-00:01:01.595 --> 00:01:02.779
+00:01:01.072 --> 00:01:02.280
 Now the first proof.
 
 14
-00:01:03.059 --> 00:01:08.957
+00:01:02.560 --> 00:01:08.551
 A model drafted a rule to catch second factors being reset in Okta, and its own examples agree with it.
 
 15
-00:01:09.237 --> 00:01:16.052
+00:01:08.831 --> 00:01:15.704
 Held to a labelled corpus it did not write, it fires on a new starter enrolling a factor, and on someone replacing a lost phone.
 
 16
-00:01:16.332 --> 00:01:18.271
+00:01:15.984 --> 00:01:18.015
 Refuted, with both mistakes named.
 
 17
-00:01:18.551 --> 00:01:25.540
+00:01:18.295 --> 00:01:25.285
 The rule that ships passes the same corpus, and proof verify checks both signatures, and that the proof is about this exact file.
 
 18
-00:01:25.820 --> 00:01:32.589
+00:01:25.565 --> 00:01:32.205
 Every command that makes a proof exits non-zero unless the verdict is proven, so each one is a gate for a pipeline.
 
 19
-00:01:34.089 --> 00:01:36.492
+00:01:33.705 --> 00:01:36.144
 The console's first section is the proving ground.
 
 20
-00:01:36.772 --> 00:01:40.708
+00:01:36.424 --> 00:01:40.464
 Every kept proof is listed with its verdict, and checked again whenever it is read.
 
 21
-00:01:40.988 --> 00:01:47.176
+00:01:40.744 --> 00:01:46.851
 At first, these proofs show a key not trusted here, because a signature says which key signed, never whose.
 
 22
-00:01:47.456 --> 00:01:49.975
+00:01:47.131 --> 00:01:49.662
 Trusting a signing key is a privileged change.
 
 23
-00:01:50.255 --> 00:01:53.436
+00:01:49.942 --> 00:01:53.239
 Here the only administrator asks, with a written reason.
 
 24
-00:01:53.716 --> 00:02:01.681
+00:01:53.519 --> 00:02:01.611
 The request waits an hour, can be declined from any administrator's session, and is then approved with a passkey sign-in from the last five minutes.
 
 25
-00:02:01.961 --> 00:02:04.712
+00:02:01.891 --> 00:02:04.445
 After that, the same proofs show a trusted signer.
 
 26
-00:02:06.212 --> 00:02:08.105
+00:02:05.945 --> 00:02:07.907
 Next, the AI analyst itself.
 
 27
-00:02:08.385 --> 00:02:21.492
+00:02:08.187 --> 00:02:21.655
 Proof analyst asks the configured model about forty-eight labelled cases, three times each, then plants instructions in the text a log carries, in English, German and Japanese, in base sixty-four, and more.
 
 28
-00:02:21.772 --> 00:02:26.904
+00:02:21.935 --> 00:02:27.252
 The models here are stand-ins, so these numbers describe the method, not any real model.
 
 29
-00:02:27.184 --> 00:02:30.504
+00:02:27.532 --> 00:02:30.980
 The cautious one was moved by none of the planted instructions.
 
 30
-00:02:30.784 --> 00:02:38.110
+00:02:31.260 --> 00:02:38.203
 The obedient one, which does what the log tells it, was moved three times out of eleven, and one hijack is enough to refute it.
 
 31
-00:02:39.610 --> 00:02:43.395
+00:02:39.703 --> 00:02:43.593
 Another vendor's AI can be scored on your own analysts' decisions.
 
 32
-00:02:43.675 --> 00:02:50.363
+00:02:43.873 --> 00:02:50.630
 Its verdicts are imported from a file, and a file with free text in it, such as the product's reasoning, is refused whole.
 
 33
-00:02:50.643 --> 00:02:59.849
+00:02:50.910 --> 00:02:59.838
 Verdict prove joins each verdict to what a person later decided, counts only verdicts given before that decision, and states an exact bound on the false-closure rate.
 
 34
-00:03:00.129 --> 00:03:06.991
+00:03:00.118 --> 00:03:06.956
 Ten of a hundred and eighty closures were real: between three and nine percent, under the declared tolerance of ten.
 
 35
-00:03:07.271 --> 00:03:07.793
+00:03:07.236 --> 00:03:07.724
 Proven.
 
 36
-00:03:09.293 --> 00:03:14.042
+00:03:09.224 --> 00:03:14.030
 Agreement with analysts is biased, because people re-examine only what looked wrong.
 
 37
-00:03:14.322 --> 00:03:24.469
+00:03:14.310 --> 00:03:24.074
 Blind adjudication draws a random sample of every closure, commits it to the audit log before anyone sees it, and shows each item with its evidence and nothing about who closed it.
 
 38
-00:03:24.749 --> 00:03:32.388
+00:03:24.354 --> 00:03:32.005
 A judgement is a record in the log, never a decision on the finding, so a product that learns from analysts cannot learn the answers.
 
 39
-00:03:33.888 --> 00:03:40.889
+00:03:33.505 --> 00:03:40.726
 A vendor's claim, such as fewer than two percent of closures wrong, can be registered as a claim card before it is tested.
 
 40
-00:03:41.169 --> 00:03:46.533
+00:03:41.006 --> 00:03:46.939
 The metric, the threshold and the window are fixed first, and only data arriving afterwards counts.
 
 41
-00:03:46.813 --> 00:03:52.095
+00:03:47.219 --> 00:03:52.258
 Tested while the window is still open, it decides nothing, and the proof says exactly that.
 
 42
-00:03:53.595 --> 00:03:54.977
+00:03:53.758 --> 00:03:55.221
 Not affected, says who?
 
 43
-00:03:55.257 --> 00:04:03.082
+00:03:55.501 --> 00:04:03.314
 Vuln prove vex holds a vendor's VEX statements against the asset's bill of materials, its advisories and the reachability analysis.
 
 44
-00:04:03.362 --> 00:04:05.440
+00:04:03.594 --> 00:04:05.742
 The scanner said express is not present.
 
 45
-00:04:05.720 --> 00:04:10.237
+00:04:06.022 --> 00:04:10.341
 The bill lists express four point eighteen, inside the affected range.
 
 46
-00:04:10.517 --> 00:04:12.119
+00:04:10.621 --> 00:04:12.421
 Contradicted, and refuted.
 
 47
-00:04:12.399 --> 00:04:15.115
+00:04:12.701 --> 00:04:15.487
 A statement that the versions do support is proven.
 
 48
-00:04:16.615 --> 00:04:22.827
-When an AI writes up an investigation, proof evidence runs every citation again against the event store.
+00:04:16.987 --> 00:04:21.085
+A rule's ATT&CK tag is only its author's word.
 
 49
-00:04:23.107 --> 00:04:25.870
-A report whose claims all hold is proven.
+00:04:21.365 --> 00:04:30.572
+Proof coverage holds each technique the rules claim to events labelled with it by whatever produced them, such as an Atomic Red Team test, and to events labelled benign.
 
 50
-00:04:26.150 --> 00:04:29.157
-One that miscounts is refuted, and names the claim.
+00:04:30.852 --> 00:04:36.924
+Named here, the two techniques are each caught, and nothing benign sets their rules off, so both are proven.
 
 51
-00:04:29.437 --> 00:04:34.325
-Nothing the report's author wrote reaches the proof, except identifiers and numbers.
+00:04:37.204 --> 00:04:46.596
+Asked about all thirty-four techniques the rules claim, it is inconclusive: thirty-two have no labelled instance yet, and it says so instead of giving a percentage.
 
 52
-00:04:35.825 --> 00:04:37.764
-Agents are registered before they act.
+00:04:46.876 --> 00:04:52.066
+With telemetry, it also checks that each rule would still fire on the fields its sources send today.
 
 53
-00:04:38.044 --> 00:04:43.535
-This one is given a token bound to a single run, and uses the agent interface as an agent would.
+00:04:52.346 --> 00:04:58.627
+A proven proof can be issued as an in-toto verification result, so a policy engine gates on one property.
 
 54
-00:04:43.815 --> 00:04:50.177
-It finds the operations, reads the queue and the proofs, and its proposal is refused, because it may only read.
+00:05:00.127 --> 00:05:03.831
+Supply-chain attacks now come through packages people already trust.
 
 55
-00:04:50.457 --> 00:04:54.811
-Agent reconcile then holds the agent's own telemetry against what the server saw.
+00:05:04.111 --> 00:05:14.792
+Vuln continuity holds each npm, PyPI and Go package in a bill to the release before it: its provenance, its trusted publishing, its source and its install scripts.
 
 56
-00:04:55.091 --> 00:05:00.408
-It reported nothing, and was seen calling four times, so it is refuted, call by call.
+00:05:15.072 --> 00:05:18.845
+This bill names nine packages, read live from their registries.
 
 57
-00:05:00.688 --> 00:05:07.237
-When an agent asks to act for a person, that person sees what it would reach, for how long, and allows or refuses.
+00:05:19.125 --> 00:05:19.961
+Seven held.
 
 58
-00:05:07.517 --> 00:05:09.246
-Every agent has a kill switch.
+00:05:20.241 --> 00:05:27.439
+The compromised axios release of March, and the package it pulled in, are refuted, because npm has withdrawn both.
 
 59
-00:05:09.526 --> 00:05:13.601
-A responder stops it with a reason, and its tokens are revoked in the same act.
+00:05:28.939 --> 00:05:32.538
+Maintainers are buried in AI-written vulnerability reports.
 
 60
-00:05:15.101 --> 00:05:21.185
-The agent interface is twelve operations behind three tools, which an agent loads only as it searches for them.
+00:05:32.818 --> 00:05:36.266
+Vuln referee holds a report to a checkout of the source it names.
 
 61
-00:05:21.465 --> 00:05:25.320
-Eleven read, and one proposes a decision for a person to make.
+00:05:36.546 --> 00:05:46.961
+A real report on minimist one point two point five is proven: its function exists, its version is in range, and its CVSS vector gives nine point eight, critical, as it says.
 
 62
-00:05:25.600 --> 00:05:27.980
-An agent can check a proof with verify proof.
+00:05:47.241 --> 00:05:51.385
+Its digest was committed to the audit log first, which fixes its priority.
 
 63
-00:05:28.260 --> 00:05:31.116
-Change one character, and the proof is refused.
+00:05:51.665 --> 00:06:02.370
+A made-up report on the same package is refuted on three counts: its range excludes the version, the file and function it cites are not there, and its own vector does not give the score it claims.
 
 64
-00:05:31.396 --> 00:05:39.534
-Agents cannot approve anything, sign or keep a proof, or reach another platform, and every value they read says whether someone outside could have written it.
+00:06:03.870 --> 00:06:07.748
+Alerts from Wazuh, or any monitor, can be sealed as they arrive.
 
 65
-00:05:41.034 --> 00:05:50.717
-The wind tunnel replays scripted attacks on AI agents: an injection through an issue, an MCP server's rug pull, data walking out, a slopsquatted package.
+00:06:08.028 --> 00:06:13.403
+Here sixteen alerts a real Wazuh manager raised are stored, and sealed in one audit entry.
 
 66
-00:05:50.997 --> 00:05:55.804
-It scores whether your own Sigma rules catch them, with respelled variants of each session.
+00:06:13.683 --> 00:06:17.688
+Proof sealed finds one of them, exactly as Wazuh wrote it, in that batch.
 
 67
-00:05:56.084 --> 00:05:59.950
-Against Aertun's own rule pack it is self-graded, and it says so.
+00:06:17.968 --> 00:06:24.412
+Until a head of the log is anchored in a Bitcoin block, it is inconclusive, and says the time rests on the log alone.
 
 68
-00:06:01.450 --> 00:06:04.364
-Underneath is a complete security-operations core.
+00:06:25.912 --> 00:06:29.697
+A detection provider, Wazuh included, can be tested blind.
 
 69
-00:06:04.644 --> 00:06:07.337
-Events, and how far behind each source runs.
+00:06:29.977 --> 00:06:39.427
+Mdr plan draws emulations at random times, and commits only the plan's digest to the audit log before any of them runs, so nobody can tune for the test.
 
 70
-00:06:07.617 --> 00:06:09.696
-Hunting by rarity, over the store.
+00:06:40.927 --> 00:06:47.324
+When an AI writes up an investigation, proof evidence runs every citation again against the event store.
 
 71
-00:06:09.976 --> 00:06:14.434
-Detection rules with fixtures, a trial ring, and each rule's measured record.
+00:06:47.604 --> 00:06:50.298
+A report whose claims all hold is proven.
 
 72
-00:06:14.714 --> 00:06:21.064
-Incidents, with the notification clocks of GDPR, NIS 2, DORA and the Cyber Resilience Act.
+00:06:50.578 --> 00:06:53.399
+One that miscounts is refuted, and names the claim.
 
 73
-00:06:21.344 --> 00:06:26.859
-And vulnerabilities, ranked by exploitation, with the smallest upgrade that clears the most risk.
+00:06:53.679 --> 00:06:58.428
+Nothing the report's author wrote reaches the proof, except identifiers and numbers.
 
 74
-00:06:28.359 --> 00:06:34.373
-People are invited with a role: viewer, analyst, responder or admin, and three jobs beside them.
+00:06:59.928 --> 00:07:01.936
+Agents are registered before they act.
 
 75
-00:06:34.653 --> 00:06:36.638
-There are deliberately no custom roles.
+00:07:02.216 --> 00:07:07.754
+This one is given a token bound to a single run, and uses the agent interface as an agent would.
 
 76
-00:06:36.918 --> 00:06:40.401
-Auth explain says exactly what a person may do, and why.
+00:07:08.034 --> 00:07:14.768
+It finds the operations, reads the queue and the proofs, and its proposal is refused, because it may only read.
 
 77
-00:06:40.681 --> 00:06:49.006
-Everybody signs in with two factors: a passkey, or single sign-on through OpenID Connect or SAML, with presets for the common identity providers.
+00:07:15.048 --> 00:07:19.495
+Agent reconcile then holds the agent's own telemetry against what the server saw.
 
 78
-00:06:50.506 --> 00:06:59.747
-Every change is written to an append-only audit log: a hash chain and a Merkle tree, with heads signed in Ed twenty-five five nineteen and M L D S A.
+00:07:19.775 --> 00:07:24.848
+It reported nothing, and was seen calling four times, so it is refuted, call by call.
 
 79
-00:07:00.027 --> 00:07:02.547
-Audit log verify re-hashes every entry.
+00:07:25.128 --> 00:07:31.572
+When an agent asks to act for a person, that person sees what it would reach, for how long, and allows or refuses.
 
 80
-00:07:02.827 --> 00:07:06.797
-Audit log prove gives six hashes that prove one entry is in the log.
+00:07:31.852 --> 00:07:33.698
+Every agent has a kill switch.
 
 81
-00:07:07.077 --> 00:07:13.869
-And an evidence pack for an S P eight hundred fifty-three control is verified offline, by someone who never sees the log.
+00:07:33.978 --> 00:07:37.995
+A responder stops it with a reason, and its tokens are revoked in the same act.
 
 82
-00:07:15.369 --> 00:07:18.655
-Finally, the claim that anyone can check a proof without Aertun.
+00:07:39.495 --> 00:07:45.718
+The agent interface is twelve operations behind three tools, which an agent loads only as it searches for them.
 
 83
-00:07:18.935 --> 00:07:31.590
-This script builds the signed bytes by hand, checks the Ed twenty-five five nineteen signature with Python's cryptography library, and the post-quantum M L D S A sixty-five signature with OpenSSL.
+00:07:45.998 --> 00:07:49.875
+Eleven read, and one proposes a decision for a person to make.
 
 84
-00:07:31.870 --> 00:07:32.601
-Both hold.
+00:07:50.155 --> 00:07:52.570
+An agent can check a proof with verify proof.
 
 85
-00:07:34.101 --> 00:07:38.257
-The console follows Material 3, in light and dark, and works at phone width.
+00:07:52.850 --> 00:07:55.683
+Change one character, and the proof is refused.
 
 86
-00:07:38.537 --> 00:07:48.905
-All sixty-two of its pages in this run were checked in Chrome for labels, headings, landmarks, keyboard order and W C A G contrast, and no issue was found.
+00:07:55.963 --> 00:08:04.357
+Agents cannot approve anything, sign or keep a proof, or reach another platform, and every value they read says whether someone outside could have written it.
 
 87
-00:07:50.405 --> 00:07:56.001
-Aertun is open source, under the Apache licence: one binary, with no dependencies.
+00:08:05.857 --> 00:08:15.412
+The wind tunnel replays scripted attacks on AI agents: an injection through an issue, an MCP server's rug pull, data walking out, a slopsquatted package.
 
 88
-00:07:56.281 --> 00:07:58.905
+00:08:15.692 --> 00:08:20.313
+It scores whether your own Sigma rules catch them, with respelled variants of each session.
+
+89
+00:08:20.593 --> 00:08:24.296
+Against Aertun's own rule pack it is self-graded, and it says so.
+
+90
+00:08:25.796 --> 00:08:28.560
+Underneath is a complete security-operations core.
+
+91
+00:08:28.840 --> 00:08:31.591
+Events, and how far behind each source runs.
+
+92
+00:08:31.871 --> 00:08:33.833
+Hunting by rarity, over the store.
+
+93
+00:08:34.113 --> 00:08:38.688
+Detection rules with fixtures, a trial ring, and each rule's measured record.
+
+94
+00:08:38.968 --> 00:08:45.237
+Incidents, with the notification clocks of GDPR, NIS 2, DORA and the Cyber Resilience Act.
+
+95
+00:08:45.517 --> 00:08:51.125
+And vulnerabilities, ranked by exploitation, with the smallest upgrade that clears the most risk.
+
+96
+00:08:52.625 --> 00:08:58.697
+People are invited with a role: viewer, analyst, responder or admin, and three jobs beside them.
+
+97
+00:08:58.977 --> 00:09:00.892
+There are deliberately no custom roles.
+
+98
+00:09:01.172 --> 00:09:04.609
+Auth explain says exactly what a person may do, and why.
+
+99
+00:09:04.889 --> 00:09:13.306
+Everybody signs in with two factors: a passkey, or single sign-on through OpenID Connect or SAML, with presets for the common identity providers.
+
+100
+00:09:14.806 --> 00:09:24.059
+Every change is written to an append-only audit log: a hash chain and a Merkle tree, with heads signed in Ed twenty-five five nineteen and M L D S A.
+
+101
+00:09:24.339 --> 00:09:26.940
+Audit log verify re-hashes every entry.
+
+102
+00:09:27.220 --> 00:09:31.794
+Audit log prove gives seven hashes that prove one entry is in the log.
+
+103
+00:09:32.074 --> 00:09:38.541
+And an evidence pack for an S P eight hundred fifty-three control is verified offline, by someone who never sees the log.
+
+104
+00:09:40.041 --> 00:09:43.315
+Finally, the claim that anyone can check a proof without Aertun.
+
+105
+00:09:43.595 --> 00:09:56.169
+This script builds the signed bytes by hand, checks the Ed twenty-five five nineteen signature with Python's cryptography library, and the post-quantum M L D S A sixty-five signature with OpenSSL.
+
+106
+00:09:56.449 --> 00:09:57.238
+Both hold.
+
+107
+00:09:58.738 --> 00:10:03.196
+The console follows Material 3, in light and dark, and works at phone width.
+
+108
+00:10:03.476 --> 00:10:13.798
+All sixty-one of its pages in this run were checked in Chrome for labels, headings, landmarks, keyboard order and W C A G contrast, and no issue was found.
+
+109
+00:10:15.298 --> 00:10:20.859
+Aertun is open source, under the Apache licence: one binary, with no dependencies.
+
+110
+00:10:21.139 --> 00:10:23.646
 The manual is at aertun dot github dot io.
