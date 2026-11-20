@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://aertun.github.io/windtunnel/">
 <meta property="og:image" content="https://aertun.github.io/assets/social.png">
 <meta property="og:locale" content="en_GB">
-<meta property="article:modified_time" content="2026-11-06">
+<meta property="article:modified_time" content="2026-11-20">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Aertun wind tunnel: agent attacks replayed through detections">
 <meta name="twitter:description" content="Replay scripted malicious AI-agent sessions through a recorded stream, measure whether the detections caught them, and sign a scorecard anybody can verify.">
@@ -28,7 +28,7 @@
 <link rel="sitemap" type="application/xml" href="/sitemap.xml">
 <script>try{var t=localStorage.getItem("vg-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}document.documentElement.classList.add("js")</script>
 <script src="/assets/docs.js" defer></script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://aertun.github.io/#project","@type":"Organization","logo":"https://aertun.github.io/assets/mark.png","name":"The aertun project","sameAs":["https://github.com/aertun/aertun"],"url":"https://github.com/aertun"},{"@type":"TechArticle","about":{"@type":"SoftwareApplication","name":"aertun"},"author":{"@id":"https://aertun.github.io/#project"},"dateModified":"2026-11-06","description":"Replay scripted malicious AI-agent sessions through a recorded stream, measure whether the detections caught them, and sign a scorecard anybody can verify.","headline":"The wind tunnel: attacks on AI agents, replayed","image":"https://aertun.github.io/assets/social.png","inLanguage":"en","isPartOf":{"@type":"WebSite","name":"aertun manual","url":"https://aertun.github.io/"},"mainEntityOfPage":"https://aertun.github.io/windtunnel/","publisher":{"@id":"https://aertun.github.io/#project"},"url":"https://aertun.github.io/windtunnel/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://aertun.github.io/","name":"aertun manual","position":1},{"@type":"ListItem","item":"https://aertun.github.io/#proving-ai-work","name":"Proving AI work","position":2},{"@type":"ListItem","name":"Wind tunnel","position":3}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://aertun.github.io/#project","@type":"Organization","logo":"https://aertun.github.io/assets/mark.png","name":"The aertun project","sameAs":["https://github.com/aertun/aertun"],"url":"https://github.com/aertun"},{"@type":"TechArticle","about":{"@type":"SoftwareApplication","name":"aertun"},"author":{"@id":"https://aertun.github.io/#project"},"dateModified":"2026-11-20","description":"Replay scripted malicious AI-agent sessions through a recorded stream, measure whether the detections caught them, and sign a scorecard anybody can verify.","headline":"The wind tunnel: attacks on AI agents, replayed","image":"https://aertun.github.io/assets/social.png","inLanguage":"en","isPartOf":{"@type":"WebSite","name":"aertun manual","url":"https://aertun.github.io/"},"mainEntityOfPage":"https://aertun.github.io/windtunnel/","publisher":{"@id":"https://aertun.github.io/#project"},"url":"https://aertun.github.io/windtunnel/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://aertun.github.io/","name":"aertun manual","position":1},{"@type":"ListItem","item":"https://aertun.github.io/#proving-ai-work","name":"Proving AI work","position":2},{"@type":"ListItem","name":"Wind tunnel","position":3}]}]}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to the content</a>
@@ -139,9 +139,31 @@ aertun windtunnel diff old.json new.json       # the CI gate: fails on a regress
 <p>It names what ran before how it went — scenario digests, the stream's digest, the rule pack's version — then reports the miss rate first, with 95% Wilson bounds, and per family. Sealed with its own digest and signed with Ed25519 and ML-DSA-65, so a third party verifies it offline with the public key alone.</p>
 <h2 id="modes">Whose rules<a class="anchor" href="#modes" aria-hidden="true" tabindex="-1">#</a></h2>
 <p>By default the scorecard is scored against Aertun's own reference rules, which were written beside the scenarios: it is a regression test of that pack, not an independent measurement. <code>run --sigma DIR</code> scores your own Sigma rules instead, joined at ATT&amp;CK technique level, with the join's limits stated on the document.</p>
+<h2 id="benign">Your estate's own weird-but-benign workflows<a class="anchor" href="#benign" aria-hidden="true" tabindex="-1">#</a></h2>
+<p>Benign twins are written beside the attacks and cannot know that your migration touches every table, that your agents make forty tool calls a second, or what your maintenance scripts look like. A benign session is one real workflow from your own event store that a person vouches for and a second administrator approves.</p>
+<pre><code>aertun benign capture nightly-backup --class backup --source aws/cloudtrail \
+    --actor aws:svc-backup --since 2026-11-19T02:00:00Z --until 2026-11-19T03:00:00Z \
+    --why "the 02:00 backup reads every object" --ticket CHG-1042 \
+    --acknowledge aws.bulk-read
+aertun pending approve ID                 # a second administrator
+aertun benign list
+aertun benign bundle --key signing.key --public-key bundle-key.json --out benign.json
+aertun windtunnel run --sigma rules/ --baseline benign.json --baseline-key bundle-key.json --out card.json</code></pre>
+<p>A capture is refused when the selection holds an indicator the intelligence store knows, touches an entity a finding is still open about (unless you name the finding), or raises an alert you did not acknowledge by name. A baseline can block a rule that would catch what it holds, so it is held like an exception: two people, a reason and a ticket, an expiry (90 days by default, at most a year, and a capture older than a year is captured again rather than renewed), and <code>aertun benign revoke</code>, which needs nobody else.</p>
+<p>Before anything leaves the store it is sanitised. Only the fields your rules read are kept. Names, addresses, domains and home directories become keyed pseudonyms that keep their shape: an address stays private or public and keeps the prefixes it shares with others, an email stays an email, a domain keeps its parents and a public provider's name. Credentials, card and bank numbers and telephone numbers inside free text become placeholders. Then your rules run on the raw and the sanitised events, and the capture is refused if any outcome differs, unless you keep that field as it is (<code>--raw FIELD</code>, recorded) or accept the loss (<code>--accept-fidelity-loss</code>, recorded). The pseudonym key never leaves the store, so the bundle — signed with Ed25519 and ML-DSA-65, every session named by the digest of its events — can go to a CI runner.</p>
+<p>The run replays each live session into the base stream on its own, keeping its own gaps and arrival delays, and counts as a false positive every alert above ambient that a measurable rule raises on it: per session, per rule and per class, as k of n with 95% Wilson bounds. A rule that reads a field the bundle dropped, or compares a pseudonymised field with a value and was not in that session's fidelity check, is named as not measurable, and its fires on the sanitised events are not counted. Under <code>--mutate</code> the sessions are respelled too, so an allowlist written for one exact spelling shows. The rates describe the workflows you chose to vouch for, not a random sample, and the scorecard says so.</p>
+<h2 id="gate">The gate, and accepted trade-offs<a class="anchor" href="#gate" aria-hidden="true" tabindex="-1">#</a></h2>
+<pre><code>aertun windtunnel diff before.json after.json --accept accepted.json</code></pre>
+<p>Besides newly missed attacks and newly firing twins, the diff fails on every rule newly firing on a benign session, compared by the session's content digest. A rule change that catches an attack and fires on the backup job may be right, but it is a decision: an acceptance names that session and that rule, a reason, who accepted it and an expiry of at most 180 days, in a file reviewed with the rule change. An expired acceptance is ignored and named. If the rule was right and the session was never benign, revoke the session instead.</p>
+<pre><code>[{"session": "nightly-backup", "rule": "aws.bulk-read",
+  "reason": "the backup runs once a night and is watched", "by": "dana",
+  "expires": "2027-02-01T00:00:00Z"}]</code></pre>
+<h2 id="perturb">Messy pipelines<a class="anchor" href="#perturb" aria-hidden="true" tabindex="-1">#</a></h2>
+<pre><code>aertun windtunnel run --sigma rules/ --perturb all --baseline benign.json --baseline-key bundle-key.json</code></pre>
+<p>Detections are written against clean streams and run against messy ones. <code>--perturb</code> replays every attack and every benign session again under the faults real pipelines introduce: <code>dup</code> delivers a quarter of events twice; <code>reorder</code> adds arrival delay up to twice the stream's own 99th-percentile lateness; <code>skew</code> puts the busiest source's clock five minutes ahead; <code>burst</code> runs the session four times faster, each event keeping its own delay; <code>drop-field</code> removes the field your rules read most, as an upgrade renaming it would. Per fault, the scorecard reports the attacks missed, the catches that broke and the benign sessions that started firing. Every perturbation is deterministic from the seed, so two runs compare.</p>
   </div>
   <footer class="guide-foot">
-    <p class="updated">Updated 2026-11-06 · <a href="https://github.com/aertun/aertun.github.io/blob/main/src/pages/windtunnel.html">Edit this page on GitHub</a></p>
+    <p class="updated">Updated 2026-11-20 · <a href="https://github.com/aertun/aertun.github.io/blob/main/src/pages/windtunnel.html">Edit this page on GitHub</a></p>
     <nav class="pager" aria-label="Previous and next guides">
       <a class="pager-prev" href="/agents/" rel="prev"><span class="pager-dir"><svg class="icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false"><path d="m313-440 196 196q12 12 11.5 28T508-188q-12 11-28 11.5T452-188L188-452q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l264-264q11-11 27.5-11t28.5 11q12 12 12 28.5T508-715L313-520h447q17 0 28.5 11.5T800-480q0 17-11.5 28.5T760-440H313Z"/></svg>Previous</span><span class="pager-title">AI agents: registered, bounded, stoppable</span></a>
       <a class="pager-next" href="/approvals/" rel="next"><span class="pager-dir">Next<svg class="icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false"><path d="M647-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h447L451-716q-12-12-11.5-28t12.5-28q12-11 28-11.5t28 11.5l264 264q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L508-188q-11 11-27.5 11T452-188q-12-12-12-28.5t12-28.5l195-195Z"/></svg></span><span class="pager-title">Approvals</span></a>
@@ -155,6 +177,9 @@ aertun windtunnel diff old.json new.json       # the CI gate: fails on a regress
     <li><a href="#scenarios">Scenarios</a></li>
     <li><a href="#scorecard">The scorecard</a></li>
     <li><a href="#modes">Whose rules</a></li>
+    <li><a href="#benign">Your estate&#39;s own weird-but-benign workflows</a></li>
+    <li><a href="#gate">The gate, and accepted trade-offs</a></li>
+    <li><a href="#perturb">Messy pipelines</a></li>
   </ul>
 </aside>
 </div>
